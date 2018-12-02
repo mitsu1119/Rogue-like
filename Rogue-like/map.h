@@ -28,12 +28,13 @@ private:
 	std::vector<Panel> body;
 
 	// ƒ}ƒbƒv©“®¶¬‚·‚é‚â‚Â
-	std::vector<Rect> rects;
-	void mapSplitter(Rect root);
+	std::vector<Rect* > rects;
+	void mapSplitter(Rect* root);
 	void genRndMap();
 
 public:
 	Map(int sizeX, int sizeY);
+	~Map();
 
 	int calcIndex(int x, int y) {
 		return this->sizeX*y + x;
