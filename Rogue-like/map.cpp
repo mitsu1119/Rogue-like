@@ -10,14 +10,14 @@ Map::Map(int sizeX, int sizeY):sizeX(sizeX), sizeY(sizeY) {
 
 Map::~Map() {
 	for(auto i : this->rects) delete i;
+	for(auto i : this->rooms) delete i;
 }
 
 void Map::Draw() {
-	reflectRects();
 	for(int i = 0; i < this->sizeY; i++) {
 		for(int j = 0; j < this->sizeX; j++) {
 			// •Ç‚È‚ç#, “¹‚È‚ç ‚ð•`‰æ
-			printfDx("%s", (this->body[calcIndex(j, i)].type == WALL ? "”" : "E"));
+			printfDx("%s", (this->body[calcIndex(j, i)].type == WALL ? "#" : "."));
 		}
 		printfDx("\n");
 	}
@@ -35,18 +35,30 @@ void Map::mapSplitter(Rect* root) {
 
 	if(GetRand(1) == 0) {
 		// c•ªŠ„
-		int splitCoord = GetRand((root->ey - MINIMUM_RECT_SIZE - 1) - (root->sy + MINIMUM_RECT_SIZE)) + (root->sy + MINIMUM_RECT_SIZE);
+		int splitCoord = randAtoB(root->sy + MINIMUM_RECT_SIZE, root->ey - MINIMUM_RECT_SIZE - 1);
 		root->ey = splitCoord;
 		child->sy = splitCoord;
 	}  else {
 		// ‰¡•ªŠ„ left | right
-		int splitCoord = GetRand((root->ex - MINIMUM_RECT_SIZE - 1) - (root->sx + MINIMUM_RECT_SIZE)) + (root->sx + MINIMUM_RECT_SIZE);
+		int splitCoord = randAtoB(root->sx + MINIMUM_RECT_SIZE, root->ex - MINIMUM_RECT_SIZE - 1);
 		root->ex = splitCoord;
 		child->sx = splitCoord; 
 	}
 	mapSplitter(root);
 	mapSplitter(child);
 	return;
+}
+
+// •”‰®‚ð¶¬‚·‚é‚â‚Â
+void Map::genRooms() {
+	int x, y, w, h;
+	for(auto i : this->rects) {
+		w = randAtoB(MINIMUM_ROOM_SIZE, i->ex - i->sx - MINIMUM_ROOM_SIZE);
+		h = randAtoB(MINIMUM_ROOM_SIZE, i->ey - i->sy - MINIMUM_ROOM_SIZE);
+		x = randAtoB(i->sx + MINIMUM_ROOM_SIZE / 2, i->ex - MINIMUM_ROOM_SIZE / 2 - w);
+		y = randAtoB(i->sy + MINIMUM_ROOM_SIZE / 2, i->ey - MINIMUM_ROOM_SIZE / 2 - h);
+		this->rooms.emplace_back(new Room(x, y, x + w, y + h));
+	}
 }
 
 // ƒ}ƒbƒv‚Ì•ªŠ„‚ðŠÇ—‚·‚éŠÖ”
@@ -56,5 +68,27 @@ void Map::genRndMap() {
 	this->rects.emplace_back(root);
 
 	mapSplitter(root);
+	genRooms();
 	reflectRects();
+}
+
+void Map::reflectRects() {
+	int j, k;
+	
+	// ‹æ‰æŠ„‚è“–‚Ä
+	for(auto i : this->rects) {
+		for(j = i->sx, k = i->sy; j <= i->ex; j++) this->body[calcIndex(j, k)].type = ROAD;
+		for(j = i->sx, k = i->ey; j <= i->ex; j++) this->body[calcIndex(j, k)].type = ROAD;
+		for(j = i->sx, k = i->sy; k <= i->ey; k++) this->body[calcIndex(j, k)].type = ROAD;
+		for(j = i->ex, k = i->sy; k <= i->ey; k++) this->body[calcIndex(j, k)].type = ROAD;
+	}
+
+	// •”‰®Š„‚è“–‚Ä
+	for(auto i : this->rooms) {
+		for(j = i->sx; j <= i->ex; j++) {
+			for(k = i->sy; k <= i->ey; k++) {
+				this->body[calcIndex(j, k)].type = ROAD;
+			}
+		}
+	}
 }

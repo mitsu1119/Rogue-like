@@ -7,7 +7,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetGraphMode(1200, 800, 32);
 	if(DxLib_Init() == -1) return -1;
 
-	Map stage(40, 40);
+	Map stage(60, 46);
 	stage.Draw();
 
 	SetDrawScreen(DX_SCREEN_BACK);
