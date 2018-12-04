@@ -14,30 +14,32 @@ public:
 	PanelType type;
 };
 
+// 部屋
+class Room {
+public:
+	Room(int sx, int sy, int ex, int ey):sx(sx), sy(sy), ex(ex), ey(ey) {
+	}
+	
+	Room() {
+	}
+
+	int sx, sy, ex, ey;
+};
+
 // 区画のクラス
 class Rect {
 public:
 	Rect(int sx, int sy, int ex, int ey):sx(sx), sy(sy), ex(ex), ey(ey),splitvflag(true),splithflag(true) {
 	}
 
-	Rect() {
-	}
-
-	bool splitvflag, splithflag;
 	int sx, sy, ex, ey;
+	bool splitvflag, splithflag;
+	
+	Room* room;
 };
 
 constexpr int MINIMUM_ROOM_SIZE = 4;
 constexpr int MINIMUM_RECT_SIZE = MINIMUM_ROOM_SIZE * 2;
-
-// 部屋
-class Room: public Rect {
-public:
-	Room(int sx, int sy, int ex, int ey):sx(sx), sy(sy), ex(ex), ey(ey) {
-	}
-
-	int sx, sy, ex, ey;
-};
 
 // 部屋同士のペア
 class RoomPair {
@@ -57,7 +59,6 @@ private:
 	std::vector<Panel> body;
 
 	std::vector<Rect* > rects;
-	std::vector<Room* > rooms;
 	std::vector<RoomPair* > roomPairs;
 
 	// マップ自動生成するやつ

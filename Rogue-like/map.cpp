@@ -9,9 +9,12 @@ Map::Map(int sizeX, int sizeY):sizeX(sizeX), sizeY(sizeY) {
 }
 
 Map::~Map() {
-	for(auto i : this->rects) delete i;
-	for(auto i : this->rooms) delete i;
-	for(auto i : this->roomPairs) delete i;
+	for(auto i : this->rects) {
+		delete i->room;
+		delete i;
+	}
+
+	//for(auto i : this->roomPairs) delete i;
 }
 
 void Map::Draw() {
@@ -40,7 +43,7 @@ void Map::mapSplitter(Rect* root) {
 		child->sy = splitCoord;
 		root->splitvflag = false;
 		child->splitvflag = false;
-		this->roomPairs.emplace_back(new RoomPair(false, root, child));
+		//this->roomPairs.emplace_back(new RoomPair(false, root, child));
 		mapSplitter(root);
 		mapSplitter(child);
 		return;
@@ -53,7 +56,7 @@ void Map::mapSplitter(Rect* root) {
 		child->sx = splitCoord; 
 		root->splithflag = false;
 		child->splithflag = false;
-		this->roomPairs.emplace_back(new RoomPair(true, root, child));
+		//this->roomPairs.emplace_back(new RoomPair(true, root, child));
 		mapSplitter(root);
 		mapSplitter(child);
 		return;
@@ -68,7 +71,7 @@ void Map::genRooms() {
 		h = randAtoB(MINIMUM_ROOM_SIZE, i->ey - i->sy - MINIMUM_ROOM_SIZE);
 		x = randAtoB(i->sx + MINIMUM_ROOM_SIZE / 2, i->ex - MINIMUM_ROOM_SIZE / 2 - w);
 		y = randAtoB(i->sy + MINIMUM_ROOM_SIZE / 2, i->ey - MINIMUM_ROOM_SIZE / 2 - h);
-		this->rooms.emplace_back(new Room(x, y, x + w, y + h));
+		i->room = new Room(x, y, x + w, y + h);
 	}
 }
 
@@ -92,14 +95,25 @@ void Map::reflectRects() {
 		for(j = i->sx, k = i->ey; j <= i->ex; j++) this->body[calcIndex(j, k)].type = ROAD;
 		for(j = i->sx, k = i->sy; k <= i->ey; k++) this->body[calcIndex(j, k)].type = ROAD;
 		for(j = i->ex, k = i->sy; k <= i->ey; k++) this->body[calcIndex(j, k)].type = ROAD;
-	}
 
-	// •”‰®Š„‚è“–‚Ä
-	for(auto i : this->rooms) {
-		for(j = i->sx; j <= i->ex; j++) {
-			for(k = i->sy; k <= i->ey; k++) {
+		// •”‰®Š„‚è“–‚Ä
+		for(j = i->room->sx; j <= i->room->ex; j++) {
+			for(k = i->room->sy; k <= i->room->ey; k++) {
 				this->body[calcIndex(j, k)].type = ROAD;
 			}
 		}
 	}
+
+/*
+	// •”‰®‚©‚ç’Ê˜H‚ðL‚Î‚·
+	int rect0x, rect0y, rect1x, rect1y;
+	for(auto i : this->roomPairs) {
+		// x•ûŒü‚ÖL‚Î‚·
+		if(i->isSide) {
+			// “–‘R‹æ‰æ1‚Ìex‚Æ‹æ‰æ2‚Ìsx‚Í“™‚µ‚¢
+			if(i->pair.first->ex != i->pair.second->sx) exit(1);
+			
+			rect0x = i->pair.first->ex;
+		}
+	}*/
 }

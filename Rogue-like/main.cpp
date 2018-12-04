@@ -11,7 +11,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	stage.Draw();
 
 	SetDrawScreen(DX_SCREEN_BACK);
-	while(ProcessMessage() == 0) {
+	while(ProcessMessage() == 0 && !CheckHitKey(KEY_INPUT_ESCAPE)) {
 		ClearDrawScreen();
 
 		ScreenFlip();
