@@ -11,6 +11,7 @@ Map::Map(int sizeX, int sizeY):sizeX(sizeX), sizeY(sizeY) {
 Map::~Map() {
 	for(auto i : this->rects) delete i;
 	for(auto i : this->rooms) delete i;
+	for(auto i : this->roomPairs) delete i;
 }
 
 void Map::Draw() {
@@ -25,28 +26,38 @@ void Map::Draw() {
 
 // 再起処理でマップを分割するやつ
 void Map::mapSplitter(Rect* root) {
-	if((root->ey - root->sy <= MINIMUM_RECT_SIZE * 2) || (root->ex - root->sx <= MINIMUM_RECT_SIZE * 2)) {
-		// 充分にマップを分割できたとき再起を終了する
-		return;
-	}
+	if(root->ey - root->sy <= MINIMUM_RECT_SIZE * 2) root->splitvflag = false;
+	if(root->ex - root->sx <= MINIMUM_RECT_SIZE * 2) root->splithflag = false;
+	if(!(root->splitvflag) && !(root->splithflag)) return;
 
 	Rect* child = new Rect(root->sx, root->sy, root->ex, root->ey);
 	this->rects.emplace_back(child);
 
-	if(GetRand(1) == 0) {
+	if(root->splitvflag) {
 		// 縦分割
 		int splitCoord = randAtoB(root->sy + MINIMUM_RECT_SIZE, root->ey - MINIMUM_RECT_SIZE - 1);
 		root->ey = splitCoord;
 		child->sy = splitCoord;
-	}  else {
+		root->splitvflag = false;
+		child->splitvflag = false;
+		this->roomPairs.emplace_back(new RoomPair(false, root, child));
+		mapSplitter(root);
+		mapSplitter(child);
+		return;
+	}
+
+	if(root->splithflag) {
 		// 横分割 left | right
 		int splitCoord = randAtoB(root->sx + MINIMUM_RECT_SIZE, root->ex - MINIMUM_RECT_SIZE - 1);
 		root->ex = splitCoord;
 		child->sx = splitCoord; 
+		root->splithflag = false;
+		child->splithflag = false;
+		this->roomPairs.emplace_back(new RoomPair(true, root, child));
+		mapSplitter(root);
+		mapSplitter(child);
+		return;
 	}
-	mapSplitter(root);
-	mapSplitter(child);
-	return;
 }
 
 // 部屋を生成するやつ

@@ -17,12 +17,13 @@ public:
 // 区画のクラス
 class Rect {
 public:
-	Rect(int sx, int sy, int ex, int ey):sx(sx), sy(sy), ex(ex), ey(ey) {
+	Rect(int sx, int sy, int ex, int ey):sx(sx), sy(sy), ex(ex), ey(ey),splitvflag(true),splithflag(true) {
 	}
 
 	Rect() {
 	}
 
+	bool splitvflag, splithflag;
 	int sx, sy, ex, ey;
 };
 
@@ -38,6 +39,17 @@ public:
 	int sx, sy, ex, ey;
 };
 
+// 部屋同士のペア
+class RoomPair {
+public:
+	RoomPair(bool isSide, Rect* rect1, Rect* rect2):isSide(isSide) {
+		this->pair = std::make_pair(rect1, rect2);
+	}
+
+	std::pair<Rect*, Rect*> pair;
+	bool isSide;	// つながりの方向(横か縦か)
+};
+
 // マップ本体
 class Map {
 private:
@@ -46,6 +58,7 @@ private:
 
 	std::vector<Rect* > rects;
 	std::vector<Room* > rooms;
+	std::vector<RoomPair* > roomPairs;
 
 	// マップ自動生成するやつ
 	void mapSplitter(Rect* root);
