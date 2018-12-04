@@ -63,6 +63,28 @@ void Map::mapSplitter(Rect* root) {
 	}
 }
 
+void Map::makePairAdd() {
+	std::vector<Rect* > coordRectType(this->sizeX*this->sizeY);
+
+	int j, k;
+	for(auto i : this->rects) {
+		for(j = i->sx; j < i->ex; j++)
+			for(k = i->sy; k < i->ey; k++) coordRectType[calcIndex(j, k)] = i;
+	}
+
+	// ç∂Ç©ÇÁâE, è„Ç©ÇÁâ∫Ç÷Ç¬Ç»ÇÆÇÃÇ≈ i < this->sizeX - 2, j < this->sizeY - 2
+	for(int i = 0; i < this->sizeX - 2; i++) {
+		for(j = 0; j < this->sizeY - 2; j++) {
+			// â°
+			if(coordRectType[calcIndex(i, j)] != coordRectType[calcIndex(i + 1, j)] && GetRand(53) == 0)
+				this->roomPairs.emplace_back(new RoomPair(true, coordRectType[calcIndex(i, j)], coordRectType[calcIndex(i + 1, j)]));
+			// èc
+			if(coordRectType[calcIndex(i, j)] != coordRectType[calcIndex(i, j + 1)] && GetRand(53) == 0)
+				this->roomPairs.emplace_back(new RoomPair(false, coordRectType[calcIndex(i, j)], coordRectType[calcIndex(i, j + 1)]));
+		}
+	}
+}
+
 // ïîâÆÇê∂ê¨Ç∑ÇÈÇ‚Ç¬
 void Map::genRooms() {
 	int x, y, w, h;
@@ -82,6 +104,7 @@ void Map::genRndMap() {
 	this->rects.emplace_back(root);
 
 	mapSplitter(root);
+	makePairAdd();
 	genRooms();
 	reflectRects();
 }

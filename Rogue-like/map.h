@@ -64,6 +64,7 @@ private:
 
 	// マップ自動生成するやつ
 	void mapSplitter(Rect* root);
+	void makePairAdd();	// 一本道になりがちだったのでさらにペアを作る
 	void genRooms();
 	void genRndMap();
 	void makeLine(int sx, int sy, int ex, int ey);
