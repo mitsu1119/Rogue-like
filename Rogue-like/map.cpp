@@ -14,7 +14,7 @@ Map::~Map() {
 		delete i;
 	}
 
-	//for(auto i : this->roomPairs) delete i;
+	for(auto i : this->roomPairs) delete i;
 }
 
 void Map::Draw() {
@@ -43,7 +43,7 @@ void Map::mapSplitter(Rect* root) {
 		child->sy = splitCoord;
 		root->splitvflag = false;
 		child->splitvflag = false;
-		//this->roomPairs.emplace_back(new RoomPair(false, root, child));
+		this->roomPairs.emplace_back(new RoomPair(false, root, child));
 		mapSplitter(root);
 		mapSplitter(child);
 		return;
@@ -56,7 +56,7 @@ void Map::mapSplitter(Rect* root) {
 		child->sx = splitCoord; 
 		root->splithflag = false;
 		child->splithflag = false;
-		//this->roomPairs.emplace_back(new RoomPair(true, root, child));
+		this->roomPairs.emplace_back(new RoomPair(true, root, child));
 		mapSplitter(root);
 		mapSplitter(child);
 		return;
@@ -86,6 +86,43 @@ void Map::genRndMap() {
 	reflectRects();
 }
 
+void Map::makeLine(int sx, int sy, int ex, int ey) {
+	int minx = (std::min)(sx, ex);
+	int miny = (std::min)(sy, ey);
+	int maxx = (std::max)(sx, ex);
+	int maxy = (std::max)(sy, ey);
+
+	if(minx < 0 || miny < 0 || maxx >= this->sizeX || maxy >= this->sizeY) exit(1);
+
+	// [0, pi/2]
+	if(sx <= ex && sy >= ey) {
+		for(int i = minx; i <= maxx; i++) this->body[calcIndex(i, maxy)].type = ROAD;
+		for(int i = miny; i <= maxy; i++) this->body[calcIndex(maxx, i)].type = ROAD;
+		return;
+	}
+
+	// (pi/2, pi)
+	if(sx > ex && sy > ey) {
+		for(int i = minx; i <= maxx; i++) this->body[calcIndex(i, miny)].type = ROAD;
+		for(int i = miny; i <= maxy; i++) this->body[calcIndex(maxx, i)].type = ROAD;
+		return;
+	}
+
+	// [pi, 3pi/2)
+	if(sx > ex && sy <= ey) {
+		for(int i = minx; i <= maxx; i++) this->body[calcIndex(i, miny)].type = ROAD;
+		for(int i = miny; i <= maxy; i++) this->body[calcIndex(minx, i)].type = ROAD;
+		return;
+	}
+
+	// [3pi/2, 2pi)
+	if(sx <= ex && sy < ey) {
+		for(int i = minx; i <= maxx; i++) this->body[calcIndex(i, maxy)].type = ROAD;
+		for(int i = miny; i <= maxy; i++) this->body[calcIndex(minx, i)].type = ROAD;
+		return;
+	}
+}
+
 void Map::reflectRects() {
 	int j, k;
 	
@@ -104,7 +141,7 @@ void Map::reflectRects() {
 		}
 	}
 
-/*
+
 	// •”‰®‚©‚ç’Ê˜H‚ðL‚Î‚·
 	int rect0x, rect0y, rect1x, rect1y;
 	for(auto i : this->roomPairs) {
@@ -114,6 +151,29 @@ void Map::reflectRects() {
 			if(i->pair.first->ex != i->pair.second->sx) exit(1);
 			
 			rect0x = i->pair.first->ex;
+			rect0y = randAtoB(i->pair.first->room->sy + 1, i->pair.first->room->ey - 1);
+			rect1x = i->pair.second->sx;
+			rect1y = randAtoB(i->pair.second->room->sy + 1, i->pair.second->room->ey - 1);
+
+			// ‹æ‰æ‚Ì‹«ŠE A,B ‚ð‹æ‰æ‚Æ‚µ‚½‚Æ‚«  A | B ‚Ì | ‚Ì•”•ª
+			makeLine(rect0x, rect0y, rect1x, rect1y);
+
+			// ‹æ‰æA‚©‚ç‹«ŠE‚Ö‚Ì‘«
+			makeLine(i->pair.first->room->ex, rect0y, rect0x, rect0y);
+
+			// ‹æ‰æB‚©‚ç‚Ì‹«ŠE‚Ö‚Ì‘«
+			makeLine(i->pair.second->room->sx, rect1y, rect1x, rect1y);
+		} else {
+			if(i->pair.first->ey != i->pair.second->sy) exit(1);
+
+			rect0x = randAtoB(i->pair.first->room->sx + 1, i->pair.first->room->ex - 1);
+			rect0y = i->pair.first->ey;
+			rect1x = randAtoB(i->pair.second->room->sx + 1, i->pair.second->room->ex - 1);
+			rect1y = i->pair.second->sy;
+
+			makeLine(rect0x, rect0y, rect1x, rect1y);
+			makeLine(rect0x, i->pair.first->room->ey, rect0x, rect0y);
+			makeLine(rect1x, i->pair.second->room->sy, rect1x, rect1y);
 		}
-	}*/
+	}
 }

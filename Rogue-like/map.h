@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <algorithm>
 #include "DxLib.h"
 #include "useful.h"
 
@@ -65,6 +66,7 @@ private:
 	void mapSplitter(Rect* root);
 	void genRooms();
 	void genRndMap();
+	void makeLine(int sx, int sy, int ex, int ey);
 
 	// •ªŠ„‚â•”‰®Š„‚è“–‚Ä‚ğ”½‰f‚·‚éŠÖ”
 	void reflectRects();
