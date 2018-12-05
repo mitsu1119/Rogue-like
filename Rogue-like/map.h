@@ -6,7 +6,7 @@
 
 // パネルの型情報のリスト
 enum PanelType {
-	WALL, ROAD
+	WALL, ROAD, TypeNum
 };
 
 // パネル一枚一枚
@@ -56,7 +56,6 @@ public:
 // マップ本体
 class Map {
 private:
-	int sizeX, sizeY;
 	std::vector<Panel> body;
 
 	std::vector<Rect* > rects;
@@ -72,14 +71,24 @@ private:
 	// 分割や部屋割り当てを反映する関数
 	void reflectRects();
 
+	// マップチップ
+	std::vector<Pic> mapchips;
 
 public:
-	Map(int sizeX, int sizeY);
+	Map(int sizeX, int sizeY, std::vector<Pic> mapchips);
 	~Map();
+
+	int sizeX, sizeY;
 
 	int calcIndex(int x, int y) {
 		return this->sizeX*y + x;
 	}
 
-	void Draw();
+	void Print();
+
+	// (screenSX, screenSY) から ([panelSX,panelEX],[panelSY,panelEY]) を計算して描画
+	void DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY);
+
+	// (screenSX, screenSY) からマップを全部描画(つまりマップを(0, 0)から描画したものを平行移動したような感じ)
+	void DrawPt(int screenSX, int screenSY);
 }; 

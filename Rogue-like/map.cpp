@@ -1,6 +1,6 @@
 #include "map.h"
 
-Map::Map(int sizeX, int sizeY):sizeX(sizeX), sizeY(sizeY) {
+Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips) {
 	SRand(GetNowCount());
 	this->body = std::vector<Panel>(sizeX*sizeY);
 
@@ -17,7 +17,7 @@ Map::~Map() {
 	for(auto i : this->roomPairs) delete i;
 }
 
-void Map::Draw() {
+void Map::Print() {
 	for(int i = 0; i < this->sizeY; i++) {
 		for(int j = 0; j < this->sizeX; j++) {
 			// 壁なら#, 道なら を描画
@@ -25,6 +25,23 @@ void Map::Draw() {
 		}
 		printfDx("\n");
 	}
+}
+
+void Map::DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY) {
+	int xsum = 0, ysum = 0;
+
+	for(int i = panelSY; i <= panelEY; i++) {
+		for(int j = panelSX; j <= panelEX; j++) {
+			DrawGraph(screenSX + xsum, screenSY + ysum, this->mapchips[this->body[calcIndex(j, i)].type].handle, true);
+			xsum += this->mapchips[this->body[calcIndex(j, i)].type].sizeX;
+		}
+		xsum = 0;
+		ysum += this->mapchips[this->body[calcIndex(panelEX, i)].type].sizeY;
+	}
+}
+
+void Map::DrawPt(int screenSX, int screenSY) {
+	DrawPart(screenSX, screenSY, 0, 0, this->sizeX - 1, this->sizeY - 1);
 }
 
 // 再起処理でマップを分割するやつ
