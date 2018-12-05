@@ -27,21 +27,25 @@ void Map::Print() {
 	}
 }
 
-void Map::DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY) {
+void Map::DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY, std::vector<Pic>* mapchips) {
 	int xsum = 0, ysum = 0;
 
 	for(int i = panelSY; i <= panelEY; i++) {
 		for(int j = panelSX; j <= panelEX; j++) {
-			DrawGraph(screenSX + xsum, screenSY + ysum, this->mapchips[this->body[calcIndex(j, i)].type].handle, true);
-			xsum += this->mapchips[this->body[calcIndex(j, i)].type].sizeX;
+			DrawGraph(screenSX + xsum, screenSY + ysum, mapchips->at(this->body[calcIndex(j, i)].type).handle, true);
+			xsum +=mapchips->at(this->body[calcIndex(j, i)].type).sizeX;
 		}
 		xsum = 0;
-		ysum += this->mapchips[this->body[calcIndex(panelEX, i)].type].sizeY;
+		ysum +=mapchips->at(this->body[calcIndex(panelEX, i)].type).sizeY;
 	}
 }
 
 void Map::DrawPt(int screenSX, int screenSY) {
-	DrawPart(screenSX, screenSY, 0, 0, this->sizeX - 1, this->sizeY - 1);
+	DrawPart(screenSX, screenSY, 0, 0, this->sizeX - 1, this->sizeY - 1, &this->mapchips);
+}
+
+void Map::DrawPtMapchips(int screenSX, int screenSY, std::vector<Pic>* mapchips) {
+	DrawPart(screenSX, screenSY, 0, 0, this->sizeX - 1, this->sizeY - 1, mapchips);
 }
 
 // 再起処理でマップを分割するやつ
