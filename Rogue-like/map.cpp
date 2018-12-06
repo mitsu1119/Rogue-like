@@ -6,6 +6,11 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips):sizeX(sizeX), sizeY(si
 
 	// body ‚ðŽ©“®¶¬
 	genRndMap();
+
+	 // Ž©‹@‚Ì”z’u
+	int randrect = GetRand((int)this->rects.size() - 1);
+	this->playerX = randAtoB(this->rects[randrect]->room->sx, this->rects[randrect]->room->ex);
+	this->playerY = randAtoB(this->rects[randrect]->room->sy, this->rects[randrect]->room->ey);
 }
 
 Map::~Map() {
@@ -21,7 +26,9 @@ void Map::Print() {
 	for(int i = 0; i < this->sizeY; i++) {
 		for(int j = 0; j < this->sizeX; j++) {
 			// •Ç‚È‚ç#, “¹‚È‚ç ‚ð•`‰æ
-			printfDx("%s", (this->body[calcIndex(j, i)].type == WALL ? "#" : "."));
+			if(j == this->playerX && i == this->playerY) printfDx("%s", "P");
+			else if(this->body[calcIndex(j, i)].type == WALL) printfDx("%s", "#");
+			else if(this->body[calcIndex(j, i)].type == ROAD) printfDx("%s", " ");
 		}
 		printfDx("\n");
 	}
@@ -97,10 +104,10 @@ void Map::makePairAdd() {
 	for(int i = 0; i < this->sizeX - 2; i++) {
 		for(j = 0; j < this->sizeY - 2; j++) {
 			// ‰¡
-			if(coordRectType[calcIndex(i, j)] != coordRectType[calcIndex(i + 1, j)] && GetRand(53) == 0)
+			if(coordRectType[calcIndex(i, j)] != coordRectType[calcIndex(i + 1, j)] && GetRand(69) == 0)
 				this->roomPairs.emplace_back(new RoomPair(true, coordRectType[calcIndex(i, j)], coordRectType[calcIndex(i + 1, j)]));
 			// c
-			if(coordRectType[calcIndex(i, j)] != coordRectType[calcIndex(i, j + 1)] && GetRand(53) == 0)
+			if(coordRectType[calcIndex(i, j)] != coordRectType[calcIndex(i, j + 1)] && GetRand(69) == 0)
 				this->roomPairs.emplace_back(new RoomPair(false, coordRectType[calcIndex(i, j)], coordRectType[calcIndex(i, j + 1)]));
 		}
 	}

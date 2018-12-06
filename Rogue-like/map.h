@@ -78,7 +78,11 @@ public:
 	Map(int sizeX, int sizeY, std::vector<Pic> mapchips);
 	~Map();
 
+	// マップのサイズ(タイルの枚数)
 	int sizeX, sizeY;
+
+	// 自機の位置(タイルの座標)
+	int playerX, playerY;
 
 	int calcIndex(int x, int y) {
 		return this->sizeX*y + x;

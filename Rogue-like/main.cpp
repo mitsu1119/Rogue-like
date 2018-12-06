@@ -25,6 +25,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	minimapchips.emplace_back(miniroad, 6, 6);
 
 	Map stage(60, 46, mapchips);
+	stage.Print();
 
 	SetDrawScreen(DX_SCREEN_BACK);
 	int cameraX = 0, cameraY = 0;
