@@ -7,7 +7,7 @@
 // パネルの型情報のリスト
 // マップチップもこの順で作る
 enum PanelType {
-	WALL, ROAD, MINI_WALL, MINI_ROAD, TypeNum
+	WALL, ROAD, MINI_WALL, MINI_ROAD, MINI_PLAYER, TypeNum
 };
 
 // パネル一枚一枚
@@ -76,8 +76,17 @@ private:
 	// マップチップ
 	std::vector<Pic> mapchips;
 
+	// (screenSX, screenSY) から ([panelSX,panelEX],[panelSY,panelEY]) を計算して描画
+	void DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY);
+
+	// マップを描画するとき、マップをどのくらいずらすか指定する変数
+	int cameraX, cameraY;
+
+	// (screenSX, screenSY) からマップを全部描画(つまりマップを(0, 0)から描画したものを平行移動したような感じ)
+	void DrawPt(int screenSX, int screenSY);
+
 public:
-	Map(int sizeX, int sizeY, std::vector<Pic> mapchips);
+	Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusX, int focusY);
 	~Map();
 
 	// マップのサイズ(タイルの枚数)
@@ -95,11 +104,6 @@ public:
 	}
 
 	void Print();
-
-	// (screenSX, screenSY) から ([panelSX,panelEX],[panelSY,panelEY]) を計算して描画
-	void DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY);
-
-	// (screenSX, screenSY) からマップを全部描画(つまりマップを(0, 0)から描画したものを平行移動したような感じ)
-	void DrawPt(int screenSX, int screenSY);
 	void DrawMinimap(int screenSX, int screenSY);
+	void DrawFocus();
 }; 

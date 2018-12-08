@@ -1,12 +1,20 @@
 #include "map.h"
 
-Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips) {
+Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusX, int focusY):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips) {
 	SRand(GetNowCount());
 	this->body = std::vector<Panel>(sizeX*sizeY);
 	this->minibody = std::vector<Panel>(sizeX*sizeY);
 
 	// body を自動生成
 	genRndMap();
+
+	// 自機の配置
+	int randrect = GetRand((int)this->rects.size() - 1);
+	this->playerX = randAtoB(this->rects[randrect]->room->sx, this->rects[randrect]->room->ex);
+	this->playerY = randAtoB(this->rects[randrect]->room->sy, this->rects[randrect]->room->ey);
+
+	this->cameraX = -(this->playerX - focusX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
+	this->cameraY = -(this->playerY - focusY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
 
 	// ミニマップを生成
 	for(int i = 0; i < (int)this->minibody.size(); i++) {
@@ -18,11 +26,7 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips):sizeX(sizeX), sizeY(si
 			this->minibody[i].type = MINI_ROAD;
 		};
 	}
-
-	 // 自機の配置
-	int randrect = GetRand((int)this->rects.size() - 1);
-	this->playerX = randAtoB(this->rects[randrect]->room->sx, this->rects[randrect]->room->ex);
-	this->playerY = randAtoB(this->rects[randrect]->room->sy, this->rects[randrect]->room->ey);
+	this->minibody[calcIndex(this->playerX, this->playerY)].type = MINI_PLAYER;
 }
 
 Map::~Map() {
@@ -74,6 +78,10 @@ void Map::DrawMinimap(int screenSX, int screenSY) {
 		xsum = 0;
 		ysum += this->mapchips.at(this->minibody[calcIndex(this->sizeX - 1, i)].type).sizeY;
 	}
+}
+
+void Map::DrawFocus() {
+	DrawPt(this->cameraX, this->cameraY);
 }
 
 // 再起処理でマップを分割するやつ

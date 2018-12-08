@@ -1,8 +1,8 @@
 #include "DxLib.h"
 #include "map.h"
 
-constexpr int MAX_MAPPART_X = 14;
-constexpr int MAX_MAPPART_Y = 8;
+constexpr int MAX_MAPFOCUS_X = 14;
+constexpr int MAX_MAPFOCUS_Y = 8;
 constexpr int MAPCHIP_SIZE = 100;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
@@ -13,44 +13,38 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 
 	/* mapchip */
+	/* TODO:一枚の画像を分割して読み込めるようにする */
 	int wall = LoadGraph("dat\\wall.png");
 	int road = LoadGraph("dat\\road.png");
 	int miniwall = LoadGraph("dat\\miniwall.png");
 	int miniroad = LoadGraph("dat\\miniroad.png");
+	int miniplayer = LoadGraph("dat\\miniplayer.png");
 
 	std::vector<Pic> mapchips;
 	mapchips.emplace_back(wall, MAPCHIP_SIZE, MAPCHIP_SIZE);
 	mapchips.emplace_back(road, MAPCHIP_SIZE, MAPCHIP_SIZE);
 	mapchips.emplace_back(miniwall, 6, 6);
 	mapchips.emplace_back(miniroad, 6, 6);
+	mapchips.emplace_back(miniplayer, 6, 6);
 
 	/* charactor */
 	Pic player(LoadGraph("dat\\player.png"), 100, 100);
-	Pic miniplayer(LoadGraph("dat\\miniplayer.png"), 6, 6);
 
-	Map stage(60, 46, mapchips);
-	// stage.Print();
+	Map stage(60, 46, mapchips, MAX_MAPFOCUS_X, MAX_MAPFOCUS_Y);
+	// stage.Print();  /* debug */
 
 	SetDrawScreen(DX_SCREEN_BACK);
-	int cameraX = -(stage.playerX - MAX_MAPPART_X / 2) * MAPCHIP_SIZE;
-	int cameraY = -(stage.playerY - MAX_MAPPART_Y / 2) * MAPCHIP_SIZE;
 	while(ProcessMessage() == 0 && !CheckHitKey(KEY_INPUT_ESCAPE)) {
 		ClearDrawScreen();
 
-		if(!CheckHitKey(KEY_INPUT_RIGHT)) cameraX += 10;
-		if(!CheckHitKey(KEY_INPUT_LEFT)) cameraX -= 10;
-		if(!CheckHitKey(KEY_INPUT_UP)) cameraY -= 10;
-		if(!CheckHitKey(KEY_INPUT_DOWN)) cameraY += 10;
+		//if(cameraX >= 0) cameraX = 0;
+		//if(cameraX + stage.sizeX * MAPCHIP_SIZE <= 1400) cameraX = 1400 - stage.sizeX * MAPCHIP_SIZE;
+		//if(cameraY >= 0) cameraY = 0;
+		//if(cameraY + stage.sizeY * MAPCHIP_SIZE <= 800) cameraY = 800 - stage.sizeY * MAPCHIP_SIZE;
 
-		if(cameraX >= 0) cameraX = 0;
-		if(cameraX + stage.sizeX * MAPCHIP_SIZE <= 1400) cameraX = 1400 - stage.sizeX * MAPCHIP_SIZE;
-		if(cameraY >= 0) cameraY = 0;
-		if(cameraY + stage.sizeY * MAPCHIP_SIZE <= 800) cameraY = 800 - stage.sizeY * MAPCHIP_SIZE;
-
-		stage.DrawPt(cameraX, cameraY);
-		
-		// ミニマップの表示
+		stage.DrawFocus();
 		stage.DrawMinimap(6, 6);
+		DrawGraph(1400 / 2 - player.sizeX / 2, 800 / 2 - player.sizeY / 2, player.handle, true);
 
 		ScreenFlip();
 	}
