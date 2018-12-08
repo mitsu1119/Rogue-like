@@ -3,9 +3,21 @@
 Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips) {
 	SRand(GetNowCount());
 	this->body = std::vector<Panel>(sizeX*sizeY);
+	this->minibody = std::vector<Panel>(sizeX*sizeY);
 
 	// body を自動生成
 	genRndMap();
+
+	// ミニマップを生成
+	for(int i = 0; i < (int)this->minibody.size(); i++) {
+		switch(this->body[i].type) {
+		case WALL:
+			this->minibody[i].type = MINI_WALL;
+			break;
+		case ROAD:
+			this->minibody[i].type = MINI_ROAD;
+		};
+	}
 
 	 // 自機の配置
 	int randrect = GetRand((int)this->rects.size() - 1);
@@ -34,25 +46,34 @@ void Map::Print() {
 	}
 }
 
-void Map::DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY, std::vector<Pic>* mapchips) {
+void Map::DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY) {
 	int xsum = 0, ysum = 0;
 
 	for(int i = panelSY; i <= panelEY; i++) {
 		for(int j = panelSX; j <= panelEX; j++) {
-			DrawGraph(screenSX + xsum, screenSY + ysum, mapchips->at(this->body[calcIndex(j, i)].type).handle, true);
-			xsum +=mapchips->at(this->body[calcIndex(j, i)].type).sizeX;
+			DrawGraph(screenSX + xsum, screenSY + ysum, this->mapchips.at(this->body[calcIndex(j, i)].type).handle, true);
+			xsum +=this->mapchips.at(this->body[calcIndex(j, i)].type).sizeX;
 		}
 		xsum = 0;
-		ysum +=mapchips->at(this->body[calcIndex(panelEX, i)].type).sizeY;
+		ysum +=this->mapchips.at(this->body[calcIndex(panelEX, i)].type).sizeY;
 	}
 }
 
 void Map::DrawPt(int screenSX, int screenSY) {
-	DrawPart(screenSX, screenSY, 0, 0, this->sizeX - 1, this->sizeY - 1, &this->mapchips);
+	DrawPart(screenSX, screenSY, 0, 0, this->sizeX - 1, this->sizeY - 1);
 }
 
-void Map::DrawPtMapchips(int screenSX, int screenSY, std::vector<Pic>* mapchips) {
-	DrawPart(screenSX, screenSY, 0, 0, this->sizeX - 1, this->sizeY - 1, mapchips);
+void Map::DrawMinimap(int screenSX, int screenSY) {
+	int xsum = 0, ysum = 0;
+
+	for(int i = 0; i < this->sizeY; i++) {
+		for(int j = 0; j < this->sizeX; j++) {
+			DrawGraph(screenSX + xsum, screenSY + ysum, this->mapchips.at(this->minibody[calcIndex(j, i)].type).handle, true);
+			xsum += this->mapchips.at(this->minibody[calcIndex(j, i)].type).sizeX;
+		}
+		xsum = 0;
+		ysum += this->mapchips.at(this->minibody[calcIndex(this->sizeX - 1, i)].type).sizeY;
+	}
 }
 
 // 再起処理でマップを分割するやつ

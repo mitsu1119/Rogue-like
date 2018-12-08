@@ -21,16 +21,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	std::vector<Pic> mapchips;
 	mapchips.emplace_back(wall, MAPCHIP_SIZE, MAPCHIP_SIZE);
 	mapchips.emplace_back(road, MAPCHIP_SIZE, MAPCHIP_SIZE);
-
-	std::vector<Pic> minimapchips;
-	minimapchips.emplace_back(miniwall, 6, 6);
-	minimapchips.emplace_back(miniroad, 6, 6);
+	mapchips.emplace_back(miniwall, 6, 6);
+	mapchips.emplace_back(miniroad, 6, 6);
 
 	/* charactor */
 	Pic player(LoadGraph("dat\\player.png"), 100, 100);
+	Pic miniplayer(LoadGraph("dat\\miniplayer.png"), 6, 6);
 
 	Map stage(60, 46, mapchips);
-	stage.Print();
+	// stage.Print();
 
 	SetDrawScreen(DX_SCREEN_BACK);
 	int cameraX = -(stage.playerX - MAX_MAPPART_X / 2) * MAPCHIP_SIZE;
@@ -51,7 +50,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		stage.DrawPt(cameraX, cameraY);
 		
 		// ミニマップの表示
-		stage.DrawPtMapchips(6, 6, &minimapchips);
+		stage.DrawMinimap(6, 6);
 
 		ScreenFlip();
 	}

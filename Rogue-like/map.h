@@ -5,8 +5,9 @@
 #include "useful.h"
 
 // パネルの型情報のリスト
+// マップチップもこの順で作る
 enum PanelType {
-	WALL, ROAD, TypeNum
+	WALL, ROAD, MINI_WALL, MINI_ROAD, TypeNum
 };
 
 // パネル一枚一枚
@@ -56,7 +57,8 @@ public:
 // マップ本体
 class Map {
 private:
-//	std::vector<Panel> body;
+	std::vector<Panel> body;
+	std::vector<Panel> minibody;
 
 	std::vector<Rect* > rects;
 	std::vector<RoomPair* > roomPairs;
@@ -95,11 +97,9 @@ public:
 	void Print();
 
 	// (screenSX, screenSY) から ([panelSX,panelEX],[panelSY,panelEY]) を計算して描画
-	void DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY, std::vector<Pic>* mapchips);
+	void DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY);
 
 	// (screenSX, screenSY) からマップを全部描画(つまりマップを(0, 0)から描画したものを平行移動したような感じ)
 	void DrawPt(int screenSX, int screenSY);
-	void DrawPtMapchips(int screenSX, int screenSY, std::vector<Pic>* mapchips);
-
-	std::vector<Panel> body;
+	void DrawMinimap(int screenSX, int screenSY);
 }; 
