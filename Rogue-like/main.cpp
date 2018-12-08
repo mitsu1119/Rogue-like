@@ -11,6 +11,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	SetGraphMode(1400, 800, 32);
 	if(DxLib_Init() == -1) return -1;
 
+
+	/* mapchip */
 	int wall = LoadGraph("dat\\wall.png");
 	int road = LoadGraph("dat\\road.png");
 	int miniwall = LoadGraph("dat\\miniwall.png");
@@ -24,11 +26,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	minimapchips.emplace_back(miniwall, 6, 6);
 	minimapchips.emplace_back(miniroad, 6, 6);
 
+	/* charactor */
+	Pic player(LoadGraph("dat\\player.png"), 100, 100);
+
 	Map stage(60, 46, mapchips);
 	stage.Print();
 
 	SetDrawScreen(DX_SCREEN_BACK);
-	int cameraX = 0, cameraY = 0;
+	int cameraX = -(stage.playerX - MAX_MAPPART_X / 2) * MAPCHIP_SIZE;
+	int cameraY = -(stage.playerY - MAX_MAPPART_Y / 2) * MAPCHIP_SIZE;
 	while(ProcessMessage() == 0 && !CheckHitKey(KEY_INPUT_ESCAPE)) {
 		ClearDrawScreen();
 
@@ -39,10 +45,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		if(cameraX >= 0) cameraX = 0;
 		if(cameraX + stage.sizeX * MAPCHIP_SIZE <= 1400) cameraX = 1400 - stage.sizeX * MAPCHIP_SIZE;
-		if(cameraY  >= 0) cameraY = 0;
+		if(cameraY >= 0) cameraY = 0;
 		if(cameraY + stage.sizeY * MAPCHIP_SIZE <= 800) cameraY = 800 - stage.sizeY * MAPCHIP_SIZE;
 
 		stage.DrawPt(cameraX, cameraY);
+		
 		// ミニマップの表示
 		stage.DrawPtMapchips(6, 6, &minimapchips);
 

@@ -6,5 +6,6 @@ private:
 	Pic pic;
 
 public:
-	Player(Pic pic);
+	Player(Pic pic):pic(pic) {
+	}
 };
