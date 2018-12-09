@@ -258,38 +258,23 @@ void Map::reflectRects() {
 	}
 }
 
+bool Map::canMove(Direction direction) {
+	int nextX = this->playerX + directionDx(direction);
+	int nextY = this->playerY + directionDy(direction);
+
+	if(nextX < 0 || nextX >= this->sizeX) return false;
+	if(nextY < 0 || nextY >= this->sizeY) return false;
+	if(this->body[calcIndex(nextX, nextY)].type == WALL) return false;
+
+	return true;
+}
+
 void Map::movePlayer(Direction direction) {
 	// TODO:‚ ‚Æ‚Åè—]‚ÌŽ®‚ðì‚Á‚Ä‚¨‚­
+	if(!canMove(direction)) return;
 	if(direction >= UP && direction < DirectionNum) this->minibody[calcIndex(this->playerX, this->playerY)].type = MINI_ROAD;
-	switch(direction) {
-	case UP:
-		this->playerY--;
-		break;
-	case RUP:
-		this->playerY--;
-		this->playerX++;
-		break;
-	case RIGHT:
-		this->playerX++;
-		break;
-	case RDOWN:
-		this->playerY++;
-		this->playerX++;
-		break;
-	case DOWN:
-		this->playerY++;
-		break;
-	case LDOWN:
-		this->playerY++;
-		this->playerX--;
-		break;
-	case LEFT:
-		this->playerX--;
-		break;
-	case LUP:
-		this->playerY--;
-		this->playerX--;
-	}
+	this->playerX += directionDx(direction);
+	this->playerY += directionDy(direction);
 }
 
 void Map::reflect() {

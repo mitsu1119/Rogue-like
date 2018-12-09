@@ -37,11 +37,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	while(ProcessMessage() == 0 && !CheckHitKey(KEY_INPUT_ESCAPE)) {
 		ClearDrawScreen();
 
-		//if(cameraX >= 0) cameraX = 0;
-		//if(cameraX + stage.sizeX * MAPCHIP_SIZE <= 1400) cameraX = 1400 - stage.sizeX * MAPCHIP_SIZE;
-		//if(cameraY >= 0) cameraY = 0;
-		//if(cameraY + stage.sizeY * MAPCHIP_SIZE <= 800) cameraY = 800 - stage.sizeY * MAPCHIP_SIZE;
-
 		/* ƒL[“ü—Íˆ— */
 		if(CheckHitKey(KEY_INPUT_UP)) {
 			if(CheckHitKey(KEY_INPUT_RIGHT)) stage.movePlayer(RUP);

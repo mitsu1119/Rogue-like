@@ -54,10 +54,6 @@ public:
 	bool isSide;	// つながりの方向(横か縦か)
 };
 
-enum Direction {
-	UP, RUP, RIGHT, RDOWN, DOWN, LDOWN, LEFT, LUP, DirectionNum
-};
-
 // マップ本体
 class Map {
 private:
@@ -89,6 +85,9 @@ private:
 
 	// (screenSX, screenSY) からマップを全部描画(つまりマップを(0, 0)から描画したものを平行移動したような感じ)
 	void DrawPt(int screenSX, int screenSY);
+
+	// プレイヤーがdirectionの方向へ動けるときtrue, 動けないときfalse
+	bool canMove(Direction direction);
 
 public:
 	Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY);
