@@ -54,6 +54,10 @@ public:
 	bool isSide;	// つながりの方向(横か縦か)
 };
 
+enum Direction {
+	UP, RUP, RIGHT, RDOWN, DOWN, LDOWN, LEFT, LUP, DirectionNum
+};
+
 // マップ本体
 class Map {
 private:
@@ -81,12 +85,13 @@ private:
 
 	// マップを描画するとき、マップをどのくらいずらすか指定する変数
 	int cameraX, cameraY;
+	int focusPanelX, focusPanelY;
 
 	// (screenSX, screenSY) からマップを全部描画(つまりマップを(0, 0)から描画したものを平行移動したような感じ)
 	void DrawPt(int screenSX, int screenSY);
 
 public:
-	Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusX, int focusY);
+	Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY);
 	~Map();
 
 	// マップのサイズ(タイルの枚数)
@@ -102,6 +107,10 @@ public:
 	void setMapChips(std::vector<Pic> mapchips) {
 		this->mapchips = mapchips;
 	}
+
+	void movePlayer(Direction direction);
+
+	void reflect();		// ループで毎回呼び出すべき関数
 
 	void Print();
 	void DrawMinimap(int screenSX, int screenSY);

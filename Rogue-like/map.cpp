@@ -1,6 +1,6 @@
 #include "map.h"
 
-Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusX, int focusY):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips) {
+Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips),focusPanelX(focusPanelX),focusPanelY(focusPanelY) {
 	SRand(GetNowCount());
 	this->body = std::vector<Panel>(sizeX*sizeY);
 	this->minibody = std::vector<Panel>(sizeX*sizeY);
@@ -13,8 +13,8 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusX, int focusY
 	this->playerX = randAtoB(this->rects[randrect]->room->sx, this->rects[randrect]->room->ex);
 	this->playerY = randAtoB(this->rects[randrect]->room->sy, this->rects[randrect]->room->ey);
 
-	this->cameraX = -(this->playerX - focusX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
-	this->cameraY = -(this->playerY - focusY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
+	this->cameraX = -(this->playerX - focusPanelX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
+	this->cameraY = -(this->playerY - focusPanelY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
 
 	// ミニマップを生成
 	for(int i = 0; i < (int)this->minibody.size(); i++) {
@@ -256,4 +256,45 @@ void Map::reflectRects() {
 			makeLine(rect1x, i->pair.second->room->sy, rect1x, rect1y);
 		}
 	}
+}
+
+void Map::movePlayer(Direction direction) {
+	// TODO:あとで剰余の式を作っておく
+	if(direction >= UP && direction < DirectionNum) this->minibody[calcIndex(this->playerX, this->playerY)].type = MINI_ROAD;
+	switch(direction) {
+	case UP:
+		this->playerY--;
+		break;
+	case RUP:
+		this->playerY--;
+		this->playerX++;
+		break;
+	case RIGHT:
+		this->playerX++;
+		break;
+	case RDOWN:
+		this->playerY++;
+		this->playerX++;
+		break;
+	case DOWN:
+		this->playerY++;
+		break;
+	case LDOWN:
+		this->playerY++;
+		this->playerX--;
+		break;
+	case LEFT:
+		this->playerX--;
+		break;
+	case LUP:
+		this->playerY--;
+		this->playerX--;
+	}
+}
+
+void Map::reflect() {
+	// プレイヤーの位置の更新
+	this->cameraX = -(this->playerX - this->focusPanelX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
+	this->cameraY = -(this->playerY - this->focusPanelY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
+	this->minibody[calcIndex(this->playerX, this->playerY)].type = MINI_PLAYER;
 }

@@ -42,9 +42,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		//if(cameraY >= 0) cameraY = 0;
 		//if(cameraY + stage.sizeY * MAPCHIP_SIZE <= 800) cameraY = 800 - stage.sizeY * MAPCHIP_SIZE;
 
+		/* ƒL[“ü—Íˆ— */
+		if(CheckHitKey(KEY_INPUT_UP)) {
+			if(CheckHitKey(KEY_INPUT_RIGHT)) stage.movePlayer(RUP);
+			else if(CheckHitKey(KEY_INPUT_LEFT)) stage.movePlayer(LUP);
+			else stage.movePlayer(UP);
+		} else if(CheckHitKey(KEY_INPUT_DOWN)) {
+			if(CheckHitKey(KEY_INPUT_RIGHT)) stage.movePlayer(RDOWN);
+			else if(CheckHitKey(KEY_INPUT_LEFT)) stage.movePlayer(LDOWN);
+			else stage.movePlayer(DOWN);
+		} else if(CheckHitKey(KEY_INPUT_RIGHT)) stage.movePlayer(RIGHT);
+		else if(CheckHitKey(KEY_INPUT_LEFT)) stage.movePlayer(LEFT);
+
+		stage.reflect();
+
 		stage.DrawFocus();
 		stage.DrawMinimap(6, 6);
 		DrawGraph(1400 / 2 - player.sizeX / 2, 800 / 2 - player.sizeY / 2, player.handle, true);
+
+		DrawFormatString(0, 0, GetColor(0, 0, 0), "playerX: %d, playerY: %d\n", stage.playerX, stage.playerY);
 
 		ScreenFlip();
 	}
