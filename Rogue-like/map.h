@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "DxLib.h"
 #include "useful.h"
+#include "player.h"
 
 // パネルの型情報のリスト
 // マップチップもこの順で作る
@@ -88,9 +89,13 @@ private:
 
 	// プレイヤーがdirectionの方向へ動けるときtrue, 動けないときfalse
 	bool canMove(Direction direction);
+	Direction moveFlag;	// 今から動く方向 DirectionNumで初期化
+	int movecnt;
+
+	Player *player;
 
 public:
-	Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY);
+	Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player);
 	~Map();
 
 	// マップのサイズ(タイルの枚数)

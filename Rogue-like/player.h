@@ -2,10 +2,10 @@
 #include "useful.h"
 
 class Player {
-private:
-	Pic pic;
-
 public:
-	Player(Pic pic):pic(pic) {
+	Player(int speed, Pic pic):pic(pic), speed(speed) {
 	}
+
+	Pic pic;
+	int speed;
 };

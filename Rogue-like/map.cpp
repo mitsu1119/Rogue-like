@@ -1,6 +1,7 @@
 #include "map.h"
 
-Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips),focusPanelX(focusPanelX),focusPanelY(focusPanelY) {
+Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips), focusPanelX(focusPanelX), focusPanelY(focusPanelY), moveFlag(DirectionNum)
+, movecnt(0), player(player) {
 	SRand(GetNowCount());
 	this->body = std::vector<Panel>(sizeX*sizeY);
 	this->minibody = std::vector<Panel>(sizeX*sizeY);
@@ -82,6 +83,7 @@ void Map::DrawMinimap(int screenSX, int screenSY) {
 
 void Map::DrawFocus() {
 	DrawPt(this->cameraX, this->cameraY);
+	DrawGraph(1400 / 2 - this->player->pic.sizeX / 2, 800 / 2 - this->player->pic.sizeY / 2, this->player->pic.handle, true);
 }
 
 // 再起処理でマップを分割するやつ
@@ -259,6 +261,8 @@ void Map::reflectRects() {
 }
 
 bool Map::canMove(Direction direction) {
+	if(this->moveFlag != DirectionNum) return false;
+
 	int nextX = this->playerX + directionDx(direction);
 	int nextY = this->playerY + directionDy(direction);
 
@@ -266,12 +270,31 @@ bool Map::canMove(Direction direction) {
 	if(nextY < 0 || nextY >= this->sizeY) return false;
 	if(this->body[calcIndex(nextX, nextY)].type == WALL) return false;
 
+	// 斜め移動の時は上と横も考える
+	// 後で剰余の式にして一発ですます
+	if(direction == RUP) {
+		if(this->body[calcIndex(nextX, nextY + 1)].type == WALL) return false;
+		if(this->body[calcIndex(nextX - 1, nextY)].type == WALL) return false;
+	}
+	if(direction == RDOWN) {
+		if(this->body[calcIndex(nextX, nextY - 1)].type == WALL) return false;
+		if(this->body[calcIndex(nextX - 1, nextY)].type == WALL) return false;
+	}
+	if(direction == LUP) {
+		if(this->body[calcIndex(nextX, nextY + 1)].type == WALL) return false;
+		if(this->body[calcIndex(nextX + 1, nextY)].type == WALL) return false;
+	}
+	if(direction == LDOWN) {
+		if(this->body[calcIndex(nextX, nextY - 1)].type == WALL) return false;
+		if(this->body[calcIndex(nextX + 1, nextY)].type == WALL) return false;
+	}
+
 	return true;
 }
 
 void Map::movePlayer(Direction direction) {
-	// TODO:あとで剰余の式を作っておく
 	if(!canMove(direction)) return;
+	this->moveFlag = direction;
 	if(direction >= UP && direction < DirectionNum) this->minibody[calcIndex(this->playerX, this->playerY)].type = MINI_ROAD;
 	this->playerX += directionDx(direction);
 	this->playerY += directionDy(direction);
@@ -279,7 +302,18 @@ void Map::movePlayer(Direction direction) {
 
 void Map::reflect() {
 	// プレイヤーの位置の更新
-	this->cameraX = -(this->playerX - this->focusPanelX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
-	this->cameraY = -(this->playerY - this->focusPanelY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
+	if(this->moveFlag != DirectionNum) {
+		this->cameraX -= directionDx(this->moveFlag) * this->player->speed;
+		this->cameraY -= directionDy(this->moveFlag) * this->player->speed;
+		this->movecnt++;
+		if(this->movecnt >= this->mapchips[ROAD].sizeX / this->player->speed) {
+			this->movecnt = 0;
+			this->moveFlag = DirectionNum;
+		}
+	}
+	if(this->moveFlag == DirectionNum) {
+		this->cameraX = -(this->playerX - this->focusPanelX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
+		this->cameraY = -(this->playerY - this->focusPanelY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
+	}
 	this->minibody[calcIndex(this->playerX, this->playerY)].type = MINI_PLAYER;
 }

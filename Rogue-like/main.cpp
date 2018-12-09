@@ -1,5 +1,6 @@
 #include "DxLib.h"
 #include "map.h"
+#include "player.h"
 
 constexpr int MAX_MAPFOCUS_X = 14;
 constexpr int MAX_MAPFOCUS_Y = 8;
@@ -29,8 +30,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 	/* charactor */
 	Pic player(LoadGraph("dat\\player.png"), 100, 100);
+	Player pp(7, player);
 
-	Map stage(60, 46, mapchips, MAX_MAPFOCUS_X, MAX_MAPFOCUS_Y);
+	Map stage(60, 46, mapchips, MAX_MAPFOCUS_X, MAX_MAPFOCUS_Y, &pp);
 	// stage.Print();  /* debug */
 
 	SetDrawScreen(DX_SCREEN_BACK);
@@ -38,6 +40,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		ClearDrawScreen();
 
 		/* ÉLÅ[ì¸óÕèàóù */
+		if(CheckHitKey(KEY_INPUT_SPACE)) pp.speed = 60;
+		else pp.speed = 7;
+
 		if(CheckHitKey(KEY_INPUT_UP)) {
 			if(CheckHitKey(KEY_INPUT_RIGHT)) stage.movePlayer(RUP);
 			else if(CheckHitKey(KEY_INPUT_LEFT)) stage.movePlayer(LUP);
@@ -53,7 +58,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		stage.DrawFocus();
 		stage.DrawMinimap(6, 6);
-		DrawGraph(1400 / 2 - player.sizeX / 2, 800 / 2 - player.sizeY / 2, player.handle, true);
 
 		DrawFormatString(0, 0, GetColor(0, 0, 0), "playerX: %d, playerY: %d\n", stage.playerX, stage.playerY);
 
