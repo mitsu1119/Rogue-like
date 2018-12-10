@@ -8,7 +8,7 @@
 // パネルの型情報のリスト
 // マップチップもこの順で作る
 enum PanelType {
-	WALL, ROAD, MINI_WALL, MINI_ROAD, MINI_PLAYER, TypeNum
+	WALL, ROAD, MINI_WALL, MINI_ROAD, MINI_PLAYER, MINI_ENEMY, TypeNum
 };
 
 // パネル一枚一枚
@@ -86,6 +86,8 @@ private:
 
 	// (screenSX, screenSY) からマップを全部描画(つまりマップを(0, 0)から描画したものを平行移動したような感じ)
 	void DrawPt(int screenSX, int screenSY);
+	// プレイヤーとマップの確認のみ
+	void Print();
 
 	// プレイヤーがdirectionの方向へ動けるときtrue, 動けないときfalse
 	bool canMove(Direction direction);
@@ -93,9 +95,10 @@ private:
 	int movecnt;
 
 	Player *player;
+	std::vector<Enemy> enemys;
 
 public:
-	Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player);
+	Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player, Enemy *enemy);
 	~Map();
 
 	// マップのサイズ(タイルの枚数)
@@ -116,7 +119,6 @@ public:
 
 	void reflect();		// ループで毎回呼び出すべき関数
 
-	void Print();
 	void DrawMinimap(int screenSX, int screenSY);
 	void DrawFocus();
 }; 

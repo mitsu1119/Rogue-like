@@ -1,6 +1,6 @@
 #include "map.h"
 
-Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips), focusPanelX(focusPanelX), focusPanelY(focusPanelY), moveFlag(DirectionNum)
+Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player, Enemy *enemy):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips), focusPanelX(focusPanelX), focusPanelY(focusPanelY), moveFlag(DirectionNum)
 , movecnt(0), player(player) {
 	SRand(GetNowCount());
 	this->body = std::vector<Panel>(sizeX*sizeY);
@@ -8,6 +8,16 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 
 	// body を自動生成
 	genRndMap();
+
+	// 敵の生成
+	// *enemy をもとに同じ型の敵が作られていく
+	for(int i = 0; i < this->sizeY; i++) {
+		for(int j = 0; j < this->sizeX; j++) {
+			if(this->body[calcIndex(j, i)].type == ROAD && GetRand(90) == 0) {
+				this->enemys.emplace_back(j, i, player->speed, enemy->pic);
+			}
+		}
+	}
 
 	// 自機の配置
 	int randrect = GetRand((int)this->rects.size() - 1);
@@ -27,7 +37,6 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 			this->minibody[i].type = MINI_ROAD;
 		};
 	}
-	this->minibody[calcIndex(this->playerX, this->playerY)].type = MINI_PLAYER;
 }
 
 Map::~Map() {
@@ -79,6 +88,14 @@ void Map::DrawMinimap(int screenSX, int screenSY) {
 		xsum = 0;
 		ysum += this->mapchips.at(this->minibody[calcIndex(this->sizeX - 1, i)].type).sizeY;
 	}
+
+	// 敵の表示
+	for(auto i : this->enemys) {
+		DrawGraph(screenSX + i.panelX * this->mapchips[MINI_ROAD].sizeX, screenSY + i.panelY * this->mapchips[MINI_ROAD].sizeY, this->mapchips[MINI_ENEMY].handle, true);
+	}
+
+	// プレイヤーの表示
+	DrawGraph(screenSX + this->playerX * this->mapchips[MINI_ROAD].sizeX, screenSY + this->playerY * this->mapchips[MINI_ROAD].sizeY, this->mapchips[MINI_PLAYER].handle, true);
 }
 
 void Map::DrawFocus() {
@@ -295,7 +312,6 @@ bool Map::canMove(Direction direction) {
 void Map::movePlayer(Direction direction) {
 	if(!canMove(direction)) return;
 	this->moveFlag = direction;
-	if(direction >= UP && direction < DirectionNum) this->minibody[calcIndex(this->playerX, this->playerY)].type = MINI_ROAD;
 	this->playerX += directionDx(direction);
 	this->playerY += directionDy(direction);
 }
@@ -315,5 +331,4 @@ void Map::reflect() {
 		this->cameraX = -(this->playerX - this->focusPanelX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
 		this->cameraY = -(this->playerY - this->focusPanelY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
 	}
-	this->minibody[calcIndex(this->playerX, this->playerY)].type = MINI_PLAYER;
 }

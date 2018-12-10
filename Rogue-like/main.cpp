@@ -20,6 +20,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	int miniwall = LoadGraph("dat\\miniwall.png");
 	int miniroad = LoadGraph("dat\\miniroad.png");
 	int miniplayer = LoadGraph("dat\\miniplayer.png");
+	int minienemy = LoadGraph("dat\\minienemy.png");
 
 	std::vector<Pic> mapchips;
 	mapchips.emplace_back(wall, MAPCHIP_SIZE, MAPCHIP_SIZE);
@@ -27,13 +28,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	mapchips.emplace_back(miniwall, 6, 6);
 	mapchips.emplace_back(miniroad, 6, 6);
 	mapchips.emplace_back(miniplayer, 6, 6);
+	mapchips.emplace_back(minienemy, 6, 6);
 
 	/* charactor */
 	Pic player(LoadGraph("dat\\player.png"), 100, 100);
+	Pic enemy(LoadGraph("dat\\enemy.png"), 100, 100);
 	Player pp(7, player);
+	Enemy ee(0, 0, 7, enemy);
 
-	Map stage(60, 46, mapchips, MAX_MAPFOCUS_X, MAX_MAPFOCUS_Y, &pp);
-	// stage.Print();  /* debug */
+	Map stage(60, 46, mapchips, MAX_MAPFOCUS_X, MAX_MAPFOCUS_Y, &pp, &ee);
 
 	SetDrawScreen(DX_SCREEN_BACK);
 	while(ProcessMessage() == 0 && !CheckHitKey(KEY_INPUT_ESCAPE)) {

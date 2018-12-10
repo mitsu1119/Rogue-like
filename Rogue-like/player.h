@@ -9,3 +9,13 @@ public:
 	Pic pic;
 	int speed;
 };
+
+class Enemy {
+public:
+	Enemy(int panelX, int panelY, int speed, Pic pic):panelX(panelX), panelY(panelY), pic(pic), speed(speed) {
+	}
+
+	Pic pic;
+	int speed;
+	int panelX, panelY;	// “G‚Ìƒpƒlƒ‹‚É‚¨‚¢‚Ä‚ÌÀ•W
+};
