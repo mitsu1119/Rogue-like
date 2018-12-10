@@ -13,7 +13,7 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 	// *enemy をもとに同じ型の敵が作られていく
 	for(int i = 0; i < this->sizeY; i++) {
 		for(int j = 0; j < this->sizeX; j++) {
-			if(this->body[calcIndex(j, i)].type == ROAD && GetRand(90) == 0) {
+			if(this->body[calcIndex(j, i)].type == ROAD && GetRand(100) == 0) {
 				this->enemys.emplace_back(j, i, player->speed, enemy->pic);
 			}
 		}
@@ -100,6 +100,11 @@ void Map::DrawMinimap(int screenSX, int screenSY) {
 
 void Map::DrawFocus() {
 	DrawPt(this->cameraX, this->cameraY);
+
+	// 敵
+	for(auto i : this->enemys) DrawGraph(this->cameraX + i.panelX * this->mapchips[ROAD].sizeX, this->cameraY + i.panelY * this->mapchips[ROAD].sizeY, i.pic.handle, true);
+
+	// プレイヤー
 	DrawGraph(1400 / 2 - this->player->pic.sizeX / 2, 800 / 2 - this->player->pic.sizeY / 2, this->player->pic.handle, true);
 }
 
@@ -312,11 +317,26 @@ bool Map::canMove(Direction direction) {
 void Map::movePlayer(Direction direction) {
 	if(!canMove(direction)) return;
 	this->moveFlag = direction;
+	
+	// 敵の動作処理
+	for(auto &i : this->enemys) i.move(direction);
+
 	this->playerX += directionDx(direction);
 	this->playerY += directionDy(direction);
 }
 
 void Map::reflect() {
+	// 敵の位置の更新
+	for(auto &i : enemys) {
+		if(i.isMoving()) {
+			// 敵のアニメーション処理
+		}
+		if(i.movecnt >= this->mapchips[ROAD].sizeX / i.speed) {
+			i.movecnt = 0;
+			i.setDirection(DirectionNum);
+		}
+	}
+
 	// プレイヤーの位置の更新
 	if(this->moveFlag != DirectionNum) {
 		this->cameraX -= directionDx(this->moveFlag) * this->player->speed;
@@ -327,6 +347,7 @@ void Map::reflect() {
 			this->moveFlag = DirectionNum;
 		}
 	}
+
 	if(this->moveFlag == DirectionNum) {
 		this->cameraX = -(this->playerX - this->focusPanelX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
 		this->cameraY = -(this->playerY - this->focusPanelY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
