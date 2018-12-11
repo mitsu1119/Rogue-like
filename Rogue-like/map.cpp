@@ -102,7 +102,10 @@ void Map::DrawFocus() {
 	DrawPt(this->cameraX, this->cameraY);
 
 	// 敵
-	for(auto i : this->enemys) DrawGraph(this->cameraX + i.panelX * this->mapchips[ROAD].sizeX, this->cameraY + i.panelY * this->mapchips[ROAD].sizeY, i.pic.handle, true);
+	for(auto i : this->enemys) {
+		// DrawGraph(this->cameraX + i.panelX * this->mapchips[ROAD].sizeX, this->cameraY + i.panelY * this->mapchips[ROAD].sizeY, i.pic.handle, true);
+		DrawGraph(i.x, i.y, i.pic.handle, true);
+	}
 
 	// プレイヤー
 	DrawGraph(1400 / 2 - this->player->pic.sizeX / 2, 800 / 2 - this->player->pic.sizeY / 2, this->player->pic.handle, true);
@@ -232,11 +235,6 @@ void Map::reflectRects() {
 	
 	// 区画割り当て
 	for(auto i : this->rects) {
-		/*for(j = i->sx, k = i->sy; j <= i->ex; j++) this->body[calcIndex(j, k)].type = ROAD;
-		for(j = i->sx, k = i->ey; j <= i->ex; j++) this->body[calcIndex(j, k)].type = ROAD;
-		for(j = i->sx, k = i->sy; k <= i->ey; k++) this->body[calcIndex(j, k)].type = ROAD;
-		for(j = i->ex, k = i->sy; k <= i->ey; k++) this->body[calcIndex(j, k)].type = ROAD;*/
-
 		// 部屋割り当て
 		for(j = i->room->sx; j <= i->room->ex; j++) {
 			for(k = i->room->sy; k <= i->room->ey; k++) {
@@ -319,24 +317,15 @@ void Map::movePlayer(Direction direction) {
 	this->moveFlag = direction;
 	
 	// 敵の動作処理
-	for(auto &i : this->enemys) i.move(direction);
+	for(auto &i : this->enemys) {	
+		i.autoMove();
+	}
 
 	this->playerX += directionDx(direction);
 	this->playerY += directionDy(direction);
 }
 
 void Map::reflect() {
-	// 敵の位置の更新
-	for(auto &i : enemys) {
-		if(i.isMoving()) {
-			// 敵のアニメーション処理
-		}
-		if(i.movecnt >= this->mapchips[ROAD].sizeX / i.speed) {
-			i.movecnt = 0;
-			i.setDirection(DirectionNum);
-		}
-	}
-
 	// プレイヤーの位置の更新
 	if(this->moveFlag != DirectionNum) {
 		this->cameraX -= directionDx(this->moveFlag) * this->player->speed;
@@ -345,6 +334,23 @@ void Map::reflect() {
 		if(this->movecnt >= this->mapchips[ROAD].sizeX / this->player->speed) {
 			this->movecnt = 0;
 			this->moveFlag = DirectionNum;
+		}
+	}
+
+	// 敵の位置の更新
+	for(auto &i : enemys) {
+		if(i.isMoving()) {
+			// 敵のアニメーション処理
+			i.x = this->cameraX + (i.panelX - directionDx(i.moveFlag)) * this->mapchips[ROAD].sizeX + i.movecnt * i.speed * directionDx(i.moveFlag);
+			i.y = this->cameraY + (i.panelY - directionDy(i.moveFlag)) * this->mapchips[ROAD].sizeY + i.movecnt * i.speed * directionDy(i.moveFlag);
+			i.reflect();
+		} else {
+			i.x = this->cameraX + i.panelX * this->mapchips[ROAD].sizeX;
+			i.y = this->cameraY + i.panelY * this->mapchips[ROAD].sizeY;
+		}
+
+		if(i.movecnt >= this->mapchips[ROAD].sizeX / i.speed) {
+			i.endMoving();
 		}
 	}
 
