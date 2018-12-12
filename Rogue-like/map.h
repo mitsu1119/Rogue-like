@@ -89,10 +89,13 @@ private:
 	// プレイヤーとマップの確認のみ
 	void Print();
 
-	// プレイヤーがdirectionの方向へ動けるときtrue, 動けないときfalse
-	bool canMove(Direction direction);
+	// (panelX, panelY)からdirectionの方向へ動けるときtrue, 動けないときfalse
+	bool canMove(int panelX, int panelY, Direction direction);
 	Direction moveFlag;	// 今から動く方向 DirectionNumで初期化
 	int movecnt;
+
+	// 敵の動作
+	void enemyMove(Enemy *enemy);
 
 	Player *player;
 	std::vector<Enemy> enemys;
@@ -113,6 +116,10 @@ public:
 
 	void setMapChips(std::vector<Pic> mapchips) {
 		this->mapchips = mapchips;
+	}
+
+	const Panel getPanel(int panelX, int panelY) {
+		return this->body.at(calcIndex(panelX, panelY));
 	}
 
 	void movePlayer(Direction direction);

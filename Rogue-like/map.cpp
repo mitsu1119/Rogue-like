@@ -280,11 +280,9 @@ void Map::reflectRects() {
 	}
 }
 
-bool Map::canMove(Direction direction) {
-	if(this->moveFlag != DirectionNum) return false;
-
-	int nextX = this->playerX + directionDx(direction);
-	int nextY = this->playerY + directionDy(direction);
+bool Map::canMove(int panelX, int panelY, Direction direction) {
+	int nextX = panelX + directionDx(direction);
+	int nextY = panelY + directionDy(direction);
 
 	if(nextX < 0 || nextX >= this->sizeX) return false;
 	if(nextY < 0 || nextY >= this->sizeY) return false;
@@ -312,14 +310,22 @@ bool Map::canMove(Direction direction) {
 	return true;
 }
 
-void Map::movePlayer(Direction direction) {
-	if(!canMove(direction)) return;
-	this->moveFlag = direction;
+void Map::enemyMove(Enemy *enemy) {
+	Direction dir;
+
+	do {
+		dir = (Direction)randAtoB(0, DirectionNum - 1);
+	} while(!canMove(enemy->panelX, enemy->panelY, dir));
 	
+	enemy->move(dir);
+}
+
+void Map::movePlayer(Direction direction) {
+	if(this->moveFlag != DirectionNum || !canMove(this->playerX, this->playerY, direction)) return;
+	this->moveFlag = direction;
+
 	// “G‚Ì“®ìˆ—
-	for(auto &i : this->enemys) {	
-		i.autoMove();
-	}
+	for(auto &i : this->enemys) enemyMove(&i);
 
 	this->playerX += directionDx(direction);
 	this->playerY += directionDy(direction);

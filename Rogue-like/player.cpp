@@ -19,11 +19,6 @@ void Enemy::setDirection(Direction direction) {
 	this->moveFlag = direction;
 }
 
-void Enemy::autoMove() {
-	Direction dir = (Direction)randAtoB(0, DirectionNum - 1);
-	move(dir);
-}
-
 void Enemy::reflect() {
 	this->movecnt++;
 }
