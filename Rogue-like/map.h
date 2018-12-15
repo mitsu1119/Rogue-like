@@ -101,14 +101,11 @@ private:
 	std::vector<Enemy> enemys;
 
 public:
-	Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player, Enemy *enemy);
+	Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player);
 	~Map();
 
 	// マップのサイズ(タイルの枚数)
 	int sizeX, sizeY;
-
-	// 自機の位置(タイルの座標)
-	int playerX, playerY;
 
 	int calcIndex(int x, int y) {
 		return this->sizeX*y + x;
@@ -122,9 +119,12 @@ public:
 		return this->body.at(calcIndex(panelX, panelY));
 	}
 
-	void movePlayer(Direction direction);
+	// キーが押された: true
+	bool keyProcessing();
 
-	void reflect();		// ループで毎回呼び出すべき関数
+	void attackPlayer();
+
+//	void reflect();		// ループで毎回呼び出すべき関数
 
 	void DrawMinimap(int screenSX, int screenSY);
 	void DrawFocus();

@@ -1,6 +1,6 @@
 #include "map.h"
 
-Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player, Enemy *enemy):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips), focusPanelX(focusPanelX), focusPanelY(focusPanelY), moveFlag(DirectionNum)
+Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips), focusPanelX(focusPanelX), focusPanelY(focusPanelY), moveFlag(DirectionNum)
 , movecnt(0), player(player) {
 	SRand(GetNowCount());
 	this->body = std::vector<Panel>(sizeX*sizeY);
@@ -10,22 +10,23 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 	genRndMap();
 
 	// 敵の生成
-	// *enemy をもとに同じ型の敵が作られていく
+	// enemy は後でデータベースを作っておく
+	Pic enemy = Pic(LoadGraph("dat\\enemy.png"), 100, 100);
 	for(int i = 0; i < this->sizeY; i++) {
 		for(int j = 0; j < this->sizeX; j++) {
 			if(this->body[calcIndex(j, i)].type == ROAD && GetRand(100) == 0) {
-				this->enemys.emplace_back(j, i, player->speed, enemy->pic);
+				this->enemys.emplace_back(j, i, player->speed, enemy);
 			}
 		}
 	}
 
 	// 自機の配置
 	int randrect = GetRand((int)this->rects.size() - 1);
-	this->playerX = randAtoB(this->rects[randrect]->room->sx, this->rects[randrect]->room->ex);
-	this->playerY = randAtoB(this->rects[randrect]->room->sy, this->rects[randrect]->room->ey);
+	this->player->panelX = randAtoB(this->rects[randrect]->room->sx, this->rects[randrect]->room->ex);
+	this->player->panelY = randAtoB(this->rects[randrect]->room->sy, this->rects[randrect]->room->ey);
 
-	this->cameraX = -(this->playerX - focusPanelX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
-	this->cameraY = -(this->playerY - focusPanelY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
+	this->cameraX = -(this->player->panelX - focusPanelX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
+	this->cameraY = -(this->player->panelY - focusPanelY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
 
 	// ミニマップを生成
 	for(int i = 0; i < (int)this->minibody.size(); i++) {
@@ -52,7 +53,7 @@ void Map::Print() {
 	for(int i = 0; i < this->sizeY; i++) {
 		for(int j = 0; j < this->sizeX; j++) {
 			// 壁なら#, 道なら を描画
-			if(j == this->playerX && i == this->playerY) printfDx("%s", "P");
+			if(j == this->player->panelX && i == this->player->panelY) printfDx("%s", "P");
 			else if(this->body[calcIndex(j, i)].type == WALL) printfDx("%s", "#");
 			else if(this->body[calcIndex(j, i)].type == ROAD) printfDx("%s", " ");
 		}
@@ -95,7 +96,7 @@ void Map::DrawMinimap(int screenSX, int screenSY) {
 	}
 
 	// プレイヤーの表示
-	DrawGraph(screenSX + this->playerX * this->mapchips[MINI_ROAD].sizeX, screenSY + this->playerY * this->mapchips[MINI_ROAD].sizeY, this->mapchips[MINI_PLAYER].handle, true);
+	DrawGraph(screenSX + this->player->panelX * this->mapchips[MINI_ROAD].sizeX, screenSY + this->player->panelY * this->mapchips[MINI_ROAD].sizeY, this->mapchips[MINI_PLAYER].handle, true);
 }
 
 void Map::DrawFocus() {
@@ -108,7 +109,7 @@ void Map::DrawFocus() {
 	}
 
 	// プレイヤー
-	DrawGraph(1400 / 2 - this->player->pic.sizeX / 2, 800 / 2 - this->player->pic.sizeY / 2, this->player->pic.handle, true);
+	this->player->Draw();
 }
 
 // 再起処理でマップを分割するやつ
@@ -184,7 +185,7 @@ void Map::genRooms() {
 // マップの分割を管理する関数
 void Map::genRndMap() {
 	for(int i = 0; i < (int)this->body.size(); i++) this->body[i].type = WALL;
-	Rect* root = new Rect(0, 0, this->sizeX - 1, this->sizeY - 1);
+	Rect *root = new Rect(0, 0, this->sizeX - 1, this->sizeY - 1);
 	this->rects.emplace_back(root);
 
 	mapSplitter(root);
@@ -320,17 +321,46 @@ void Map::enemyMove(Enemy *enemy) {
 	enemy->move(dir);
 }
 
-void Map::movePlayer(Direction direction) {
-	if(this->moveFlag != DirectionNum || !canMove(this->playerX, this->playerY, direction)) return;
-	this->moveFlag = direction;
+bool Map::keyProcessing() {
+	/* キー入力処理 */
+	if(CheckHitKey(KEY_INPUT_SPACE)) this->player->speed = 60;
+	else this->player->speed = 7;
+
+	/* if(CheckHitKey(KEY_INPUT_Z)) {
+			stage.attackPlayer();
+		} else */
+	if(CheckHitKey(KEY_INPUT_UP)) {
+		if(CheckHitKey(KEY_INPUT_RIGHT)) this->player->move(RUP, this->mapchips[ROAD].sizeX);
+		else if(CheckHitKey(KEY_INPUT_LEFT)) this->player->move(LUP, this->mapchips[ROAD].sizeX);
+		else this->player->move(UP, this->mapchips[ROAD].sizeX);
+		return true;
+	} else if(CheckHitKey(KEY_INPUT_DOWN)) {
+		if(CheckHitKey(KEY_INPUT_RIGHT)) this->player->move(RDOWN, this->mapchips[ROAD].sizeX);
+		else if(CheckHitKey(KEY_INPUT_LEFT)) this->player->move(LDOWN, this->mapchips[ROAD].sizeX);
+		else this->player->move(DOWN, this->mapchips[ROAD].sizeX);
+		return true;
+	} else if(CheckHitKey(KEY_INPUT_RIGHT)) {
+		this->player->move(RIGHT, this->mapchips[ROAD].sizeX);
+		return true;
+	} else if(CheckHitKey(KEY_INPUT_LEFT)) {
+		this->player->move(LEFT, this->mapchips[ROAD].sizeX);
+		return true;
+	}
+
+	return false;
+}
+
+void Map::attackPlayer() {
+	if(this->moveFlag != DirectionNum || this->player->attackFlag) return;
+	this->player->attackFlag = true;
+
+	this->player->attack();
 
 	// 敵の動作処理
 	for(auto &i : this->enemys) enemyMove(&i);
-
-	this->playerX += directionDx(direction);
-	this->playerY += directionDy(direction);
 }
 
+/*
 void Map::reflect() {
 	// プレイヤーの位置の更新
 	if(this->moveFlag != DirectionNum) {
@@ -343,25 +373,53 @@ void Map::reflect() {
 		}
 	}
 
-	// 敵の位置の更新
-	for(auto &i : enemys) {
-		if(i.isMoving()) {
-			// 敵のアニメーション処理
-			i.x = this->cameraX + (i.panelX - directionDx(i.moveFlag)) * this->mapchips[ROAD].sizeX + i.movecnt * i.speed * directionDx(i.moveFlag);
-			i.y = this->cameraY + (i.panelY - directionDy(i.moveFlag)) * this->mapchips[ROAD].sizeY + i.movecnt * i.speed * directionDy(i.moveFlag);
-			i.reflect();
+	// プレイヤーの攻撃を更新
+	if(this->player->attackFlag) {
+		if(this->movecnt >= 0 && this->movecnt <= 9) {
+			this->cameraX -= directionDx(this->player->front) * 10;
+			this->cameraY -= directionDy(this->player->front) * 10;
 		} else {
-			i.x = this->cameraX + i.panelX * this->mapchips[ROAD].sizeX;
-			i.y = this->cameraY + i.panelY * this->mapchips[ROAD].sizeY;
+			this->cameraX += directionDx(this->player->front) * 10;
+			this->cameraY += directionDy(this->player->front) * 10;
 		}
-
-		if(i.movecnt >= this->mapchips[ROAD].sizeX / i.speed) {
-			i.endMoving();
+		this->movecnt++;
+		if(this->movecnt >= 20) {
+			this->movecnt = 0;
+			this->player->attackFlag = false;
 		}
 	}
 
-	if(this->moveFlag == DirectionNum) {
-		this->cameraX = -(this->playerX - this->focusPanelX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
-		this->cameraY = -(this->playerY - this->focusPanelY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
+	// 敵の位置の更新
+	if(!this->player->attackFlag) {
+		for(auto &i : enemys) {
+			if(i.isMoving()) {
+				// 敵のアニメーション処理
+				i.x = this->cameraX + (i.panelX - directionDx(i.moveFlag)) * this->mapchips[ROAD].sizeX + i.movecnt * i.speed * directionDx(i.moveFlag);
+				i.y = this->cameraY + (i.panelY - directionDy(i.moveFlag)) * this->mapchips[ROAD].sizeY + i.movecnt * i.speed * directionDy(i.moveFlag);
+				i.reflect();
+			} else {
+				i.x = this->cameraX + i.panelX * this->mapchips[ROAD].sizeX;
+				i.y = this->cameraY + i.panelY * this->mapchips[ROAD].sizeY;
+			}
+
+			if(i.movecnt >= this->mapchips[ROAD].sizeX / i.speed) {
+				i.endMoving();
+			}
+		}
+	} else {
+		for(auto &i : enemys) {
+			if(this->movecnt >= 0 && this->movecnt <= 9) {
+				i.x -= directionDx(this->player->front) * 10;
+				i.y -= directionDy(this->player->front) * 10;
+			} else {
+				i.x += directionDx(this->player->front) * 10;
+				i.y += directionDy(this->player->front) * 10;
+			}
+		}
 	}
-}
+
+	if(this->moveFlag == DirectionNum && !this->player->attackFlag) {
+		this->cameraX = -(this->player->panelX - this->focusPanelX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
+		this->cameraY = -(this->player->panelY - this->focusPanelY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
+	}
+}*/
