@@ -13,19 +13,30 @@ private:
 	int x, y;
 
 public:
-	Player(int x, int y, int speed, Pic pic);
+	Player(int x, int y, int speed, Pic pic, int panelSize);
 
 	Pic pic;
 	int speed;
-	int panelX, panelY;
+
+	// パネルの座標. パネル一枚のサイズ
+	int panelX, panelY, panelSize;
 
 	// true:している false:してない
 	bool attackFlag;
 	bool isMoving();
 
 	void attack();
-	void move(Direction direction, int panelSize);
+	void move(Direction direction);
 	void moveAnimation();
+	void reviceCoord(bool harfX, bool harfY);
+
+	// プレイヤーの実座標を (x, y) だけ平行移動
+	void shift(int x, int y);
+
+	// 実座標の所得
+	int getx();
+	int gety();
+
 	void Draw();
 };
 

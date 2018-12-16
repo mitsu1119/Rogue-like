@@ -15,8 +15,9 @@ Game::Game(int maxFocusX, int maxFocusY): turn(0), turnOld(-1), maxFocusX(maxFoc
 	mapchips.emplace_back(Pic(LoadGraph("dat\\minienemy.png"), 6, 6));
 
 	Pic playerPic(LoadGraph("dat\\player.png"), 100, 100);
-	player = new Player(this->windowSizeX / 2 - playerPic.sizeX / 2, this->windowSizeY / 2 - playerPic.sizeY / 2, 7, playerPic);
+	player = new Player(0, 0, 7, playerPic, mapchips[ROAD].sizeX);
 
+	// プレイヤーのパネル座標及び実座標はmap生成時に自動で決定される
 	map = new Map(60, 46, this->mapchips, this->maxFocusX, this->maxFocusY, this->player);
 } 
 
@@ -26,7 +27,10 @@ Game::~Game() {
 } 
 
 void Game::reflect() {
-	if(!this->player->isMoving()) this->turn = this->turnOld + 1;
+	if(!this->player->isMoving()) {
+		this->turn = this->turnOld + 1;
+		// this->player->reviceCoord();
+	}
 
 	if(this->turn > this->turnOld) {
 		if(map->keyProcessing()) this->turnOld = this->turn;

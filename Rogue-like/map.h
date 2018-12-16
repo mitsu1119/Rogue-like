@@ -124,7 +124,10 @@ public:
 
 	void attackPlayer();
 
-//	void reflect();		// ループで毎回呼び出すべき関数
+	// 実座標でスクロール
+	void scroll(int x, int y);
+	// パネルの数でスクロール
+	void scrollPanel(int panelX, int panelY);
 
 	void DrawMinimap(int screenSX, int screenSY);
 	void DrawFocus();

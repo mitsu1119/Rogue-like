@@ -25,8 +25,16 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 	this->player->panelX = randAtoB(this->rects[randrect]->room->sx, this->rects[randrect]->room->ex);
 	this->player->panelY = randAtoB(this->rects[randrect]->room->sy, this->rects[randrect]->room->ey);
 
-	this->cameraX = -(this->player->panelX - focusPanelX / 2) * mapchips[ROAD].sizeX - mapchips[ROAD].sizeX / 2;
-	this->cameraY = -(this->player->panelY - focusPanelY / 2) * mapchips[ROAD].sizeY - mapchips[ROAD].sizeY / 2;
+	this->cameraX = 0;
+	this->cameraY = 0;
+	this->player->reviceCoord(false, false);
+
+	// focusPanelX,Y が偶数だったとき半分だけ横にずらす処理
+	if(this->focusPanelX % 2 == 0) scroll(-this->mapchips[ROAD].sizeX / 2, 0);
+	if(this->focusPanelY % 2 == 0) scroll(0, -this->mapchips[ROAD].sizeY / 2);
+
+	// 実際の座標に表示した後マップをスクロールしてきて画面内の中央にプレイヤーを持ってくるしょり
+	scrollPanel(-this->player->panelX + this->focusPanelX / 2, -this->player->panelY + this->focusPanelY / 2);
 
 	// ミニマップを生成
 	for(int i = 0; i < (int)this->minibody.size(); i++) {
@@ -330,20 +338,20 @@ bool Map::keyProcessing() {
 			stage.attackPlayer();
 		} else */
 	if(CheckHitKey(KEY_INPUT_UP)) {
-		if(CheckHitKey(KEY_INPUT_RIGHT)) this->player->move(RUP, this->mapchips[ROAD].sizeX);
-		else if(CheckHitKey(KEY_INPUT_LEFT)) this->player->move(LUP, this->mapchips[ROAD].sizeX);
-		else this->player->move(UP, this->mapchips[ROAD].sizeX);
+		if(CheckHitKey(KEY_INPUT_RIGHT)) this->player->move(RUP);
+		else if(CheckHitKey(KEY_INPUT_LEFT)) this->player->move(LUP);
+		else this->player->move(UP);
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_DOWN)) {
-		if(CheckHitKey(KEY_INPUT_RIGHT)) this->player->move(RDOWN, this->mapchips[ROAD].sizeX);
-		else if(CheckHitKey(KEY_INPUT_LEFT)) this->player->move(LDOWN, this->mapchips[ROAD].sizeX);
-		else this->player->move(DOWN, this->mapchips[ROAD].sizeX);
+		if(CheckHitKey(KEY_INPUT_RIGHT)) this->player->move(RDOWN);
+		else if(CheckHitKey(KEY_INPUT_LEFT)) this->player->move(LDOWN);
+		else this->player->move(DOWN);
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_RIGHT)) {
-		this->player->move(RIGHT, this->mapchips[ROAD].sizeX);
+		this->player->move(RIGHT);
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_LEFT)) {
-		this->player->move(LEFT, this->mapchips[ROAD].sizeX);
+		this->player->move(LEFT);
 		return true;
 	}
 
@@ -358,6 +366,16 @@ void Map::attackPlayer() {
 
 	// 敵の動作処理
 	for(auto &i : this->enemys) enemyMove(&i);
+}
+
+void Map::scroll(int x, int y) {
+	this->cameraX += x;
+	this->cameraY += y;
+	this->player->shift(x, y);
+}
+
+void Map::scrollPanel(int panelX, int panelY) {
+	scroll(this->mapchips[ROAD].sizeX * panelX, this->mapchips[ROAD].sizeY * panelY);
 }
 
 /*
