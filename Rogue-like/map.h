@@ -129,6 +129,9 @@ public:
 	// パネルの数でスクロール
 	void scrollPanel(int panelX, int panelY);
 
+	// プレイヤーやマップを表示する位置の調整など
+	void revice();
+
 	void DrawMinimap(int screenSX, int screenSY);
 	void DrawFocus();
 }; 

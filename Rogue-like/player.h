@@ -28,6 +28,7 @@ public:
 	void attack();
 	void move(Direction direction);
 	void moveAnimation();
+	void moveAnimation(int &dx, int &dy);	// どのくらい動いたか知りたいとき
 	void reviceCoord(bool harfX, bool harfY);
 
 	// プレイヤーの実座標を (x, y) だけ平行移動

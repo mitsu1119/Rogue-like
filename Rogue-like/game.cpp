@@ -29,7 +29,7 @@ Game::~Game() {
 void Game::reflect() {
 	if(!this->player->isMoving()) {
 		this->turn = this->turnOld + 1;
-		// this->player->reviceCoord();
+		this->map->revice();
 	}
 
 	if(this->turn > this->turnOld) {
@@ -37,7 +37,9 @@ void Game::reflect() {
 	}
 
 	if(this->player->isMoving()) {
-		this->player->moveAnimation();
+		int dx, dy;
+		this->player->moveAnimation(dx, dy);
+		this->map->scroll(-dx, -dy);
 	}
 
 	map->DrawFocus();

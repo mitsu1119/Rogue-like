@@ -26,6 +26,15 @@ void Player::moveAnimation() {
 	if(animationTime == 0) this->moveFlag = false;
 }
 
+void Player::moveAnimation(int &dx, int &dy) {
+	this->x += directionDx(this->front) * this->speed;
+	this->y += directionDy(this->front) * this->speed;
+	this->animationTime--;
+	dx = directionDx(this->front) * this->speed;
+	dy = directionDy(this->front) * this->speed;
+	if(animationTime == 0) this->moveFlag = false;
+}
+
 // (panelX, panelY) ‚©‚ç (x, y) ‚ð•â³‚·‚éŠÖ”
 void Player::reviceCoord(bool harfX, bool harfY) {
 	this->x = this->panelX * this->panelSize;
