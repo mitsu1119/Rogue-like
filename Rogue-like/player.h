@@ -3,29 +3,31 @@
 #include "DxLib.h"
 
 class Player {
-private:
+protected:
+	// スクリーン座標
+	int x, y;
+
 	// true: 動いている
 	bool moveFlag;
 	Direction front;
 	int animationTime;
 
-	// スクリーン座標
-	int x, y;
+	// プレイヤーのいる最低限のマップの情報
+	int panelSize;
+
+	Pic pic;
 
 public:
 	Player(int speed, Pic pic, int panelSize);
+	Player(int panelX, int panelY, int speed, Pic pic, int panelSize);	// enemy用
 
-	Pic pic;
+	// パネルの座標
+	int panelX, panelY;
 	int speed;
 
-	// パネルの座標. パネル一枚のサイズ
-	int panelX, panelY, panelSize;
-
 	// true:している false:してない
-	bool attackFlag;
 	bool isMoving();
 
-	void attack();
 	void move(Direction direction);
 	void moveAnimation();
 	void moveAnimation(int &dx, int &dy);	// どのくらい動いたか知りたいとき
@@ -41,29 +43,10 @@ public:
 	void Draw();
 };
 
-class Enemy {
+class Enemy : public Player {
 private:
 	void setDirection(Direction direction);
 
 public:
 	Enemy(int panelX, int panelY, int speed, Pic pic, int panelSize);
-
-	Pic pic;
-	int speed;
-	int panelX, panelY, panelSize;	// 敵のパネルにおいての座標
-	int x, y;	// スクリーン座標
-	int movecnt;
-	bool moveFlag;
-	int animationTime;
-
-	Direction front;
-
-	void move(Direction direction);
-	void moveAnimation();
-	bool isMoving();
-	void endMoving();
-	void shift(int x, int y);
-	void reviceCoord(bool harfX, bool harfY);
-	void reflect();
-	void Draw();
 };

@@ -87,16 +87,12 @@ private:
 
 	// (screenSX, screenSY) からマップを全部描画(つまりマップを(0, 0)から描画したものを平行移動したような感じ)
 	void DrawPt(int screenSX, int screenSY);
+
 	// プレイヤーとマップの確認のみ
 	void Print();
 
 	// (panelX, panelY)からdirectionの方向へ動けるときtrue, 動けないときfalse
 	bool canMove(int panelX, int panelY, Direction direction);
-	Direction moveFlag;	// 今から動く方向 DirectionNumで初期化
-	int movecnt;
-
-	// 敵の動作
-	void enemyMove(Enemy *enemy);
 
 	Player *player;
 	std::vector<Enemy> enemys;
@@ -112,22 +108,12 @@ public:
 		return this->sizeX*y + x;
 	}
 
-	void setMapChips(std::vector<Pic> mapchips) {
-		this->mapchips = mapchips;
-	}
-
-	const Panel getPanel(int panelX, int panelY) {
-		return this->body.at(calcIndex(panelX, panelY));
-	}
-
 	void setMovable(int panelX, int panelY, bool flag) {
 		this->movable[calcIndex(panelX, panelY)] = flag;
 	}
 
 	// キーが押された: true
 	bool keyProcessing();
-
-	void attackPlayer();
 
 	// 実座標でスクロール
 	void scroll(int x, int y);
