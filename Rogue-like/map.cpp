@@ -15,7 +15,7 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 	for(int i = 0; i < this->sizeY; i++) {
 		for(int j = 0; j < this->sizeX; j++) {
 			if(this->body[calcIndex(j, i)].type == ROAD && GetRand(100) == 0) {
-				this->enemys.emplace_back(j, i, player->speed, enemy);
+				this->enemys.emplace_back(j, i, player->speed, enemy, this->mapchips[ROAD].sizeX);
 			}
 		}
 	}
@@ -24,9 +24,7 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 	int randrect = GetRand((int)this->rects.size() - 1);
 	this->player->panelX = randAtoB(this->rects[randrect]->room->sx, this->rects[randrect]->room->ex);
 	this->player->panelY = randAtoB(this->rects[randrect]->room->sy, this->rects[randrect]->room->ey);
-
-	revice();
-
+	
 	// ミニマップを生成
 	for(int i = 0; i < (int)this->minibody.size(); i++) {
 		switch(this->body[i].type) {
@@ -37,6 +35,7 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 			this->minibody[i].type = MINI_ROAD;
 		};
 	}
+	revice();
 }
 
 Map::~Map() {
@@ -64,6 +63,7 @@ void Map::revice() {
 	this->cameraX = 0;
 	this->cameraY = 0;
 	this->player->reviceCoord(false, false);
+	for(auto &i : this->enemys) i.reviceCoord(false, false);
 
 	// focusPanelX,Y が偶数だったとき半分だけ横にずらす処理
 	if(this->focusPanelX % 2 == 0) scroll(-this->mapchips[ROAD].sizeX / 2, 0);
@@ -71,6 +71,22 @@ void Map::revice() {
 
 	// 実際の座標に表示した後マップをスクロールしてきて画面内の中央にプレイヤーを持ってくるしょり
 	scrollPanel(-this->player->panelX + this->focusPanelX / 2, -this->player->panelY + this->focusPanelY / 2);
+}
+
+void Map::moveEnemys() {
+	Direction dir;
+	for(auto &i : this->enemys) {
+		do {
+			dir = (Direction)randAtoB(0, DirectionNum - 1);
+		} while(!canMove(i.panelX, i.panelY, dir));
+		i.move(dir);
+	}
+}
+
+void Map::moveAnimationEnemys() {
+	for(auto &i : this->enemys) {
+		i.moveAnimation();
+	}
 }
 
 void Map::DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY) {
@@ -115,10 +131,7 @@ void Map::DrawFocus() {
 	DrawPt(this->cameraX, this->cameraY);
 
 	// 敵
-	for(auto i : this->enemys) {
-		// DrawGraph(this->cameraX + i.panelX * this->mapchips[ROAD].sizeX, this->cameraY + i.panelY * this->mapchips[ROAD].sizeY, i.pic.handle, true);
-		DrawGraph(i.x, i.y, i.pic.handle, true);
-	}
+	for(auto i : this->enemys) i.Draw();
 
 	// プレイヤー
 	this->player->Draw();
@@ -392,6 +405,7 @@ void Map::scroll(int x, int y) {
 	this->cameraX += x;
 	this->cameraY += y;
 	this->player->shift(x, y);
+	for(auto &i : this->enemys) i.shift(x, y);
 }
 
 void Map::scrollPanel(int panelX, int panelY) {

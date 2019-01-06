@@ -132,6 +132,9 @@ public:
 	// プレイヤーやマップを表示する位置の調整など
 	void revice();
 
+	void moveEnemys();
+	void moveAnimationEnemys();
+
 	void DrawMinimap(int screenSX, int screenSY);
 	void DrawFocus();
 }; 

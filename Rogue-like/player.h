@@ -13,7 +13,7 @@ private:
 	int x, y;
 
 public:
-	Player(int x, int y, int speed, Pic pic, int panelSize);
+	Player(int speed, Pic pic, int panelSize);
 
 	Pic pic;
 	int speed;
@@ -46,21 +46,24 @@ private:
 	void setDirection(Direction direction);
 
 public:
-	Enemy(int panelX, int panelY, int speed, Pic pic):panelX(panelX), panelY(panelY), pic(pic), speed(speed), moveFlag(DirectionNum), movecnt(0), x(0), y(0) {
-		this->front = (Direction)randAtoB(0, DirectionNum - 1);
-	}
+	Enemy(int panelX, int panelY, int speed, Pic pic, int panelSize);
 
 	Pic pic;
 	int speed;
-	int panelX, panelY;	// 敵のパネルにおいての座標
+	int panelX, panelY, panelSize;	// 敵のパネルにおいての座標
 	int x, y;	// スクリーン座標
 	int movecnt;
-	Direction moveFlag;
+	bool moveFlag;
+	int animationTime;
 
 	Direction front;
 
 	void move(Direction direction);
+	void moveAnimation();
 	bool isMoving();
 	void endMoving();
+	void shift(int x, int y);
+	void reviceCoord(bool harfX, bool harfY);
 	void reflect();
+	void Draw();
 };
