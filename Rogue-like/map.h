@@ -60,6 +60,7 @@ class Map {
 private:
 	std::vector<Panel> body;
 	std::vector<Panel> minibody;
+	std::vector<bool> movable;
 
 	std::vector<Rect* > rects;
 	std::vector<RoomPair* > roomPairs;
@@ -117,6 +118,10 @@ public:
 
 	const Panel getPanel(int panelX, int panelY) {
 		return this->body.at(calcIndex(panelX, panelY));
+	}
+
+	void setMovable(int panelX, int panelY, bool flag) {
+		this->movable[calcIndex(panelX, panelY)] = flag;
 	}
 
 	// ƒL[‚ª‰Ÿ‚³‚ê‚½: true

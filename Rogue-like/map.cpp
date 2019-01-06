@@ -8,6 +8,15 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 
 	// body を自動生成
 	genRndMap();
+	for(auto &i : this->body) {
+		switch(i.type) {
+		case WALL:
+			this->movable.emplace_back(false);
+			break;
+		default:
+			this->movable.emplace_back(true);
+		};
+	}
 
 	// 敵の生成
 	// enemy は後でデータベースを作っておく
@@ -16,6 +25,7 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 		for(int j = 0; j < this->sizeX; j++) {
 			if(this->body[calcIndex(j, i)].type == ROAD && GetRand(100) == 0) {
 				this->enemys.emplace_back(j, i, player->speed, enemy, this->mapchips[ROAD].sizeX);
+				this->movable[calcIndex(j, i)] = false;
 			}
 		}
 	}
@@ -24,6 +34,7 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 	int randrect = GetRand((int)this->rects.size() - 1);
 	this->player->panelX = randAtoB(this->rects[randrect]->room->sx, this->rects[randrect]->room->ex);
 	this->player->panelY = randAtoB(this->rects[randrect]->room->sy, this->rects[randrect]->room->ey);
+	this->movable[calcIndex(this->player->panelX, this->player->panelY)] = false;
 	
 	// ミニマップを生成
 	for(int i = 0; i < (int)this->minibody.size(); i++) {
@@ -79,7 +90,9 @@ void Map::moveEnemys() {
 		do {
 			dir = (Direction)randAtoB(0, DirectionNum - 1);
 		} while(!canMove(i.panelX, i.panelY, dir));
+		setMovable(i.panelX, i.panelY, true);
 		i.move(dir);
+		setMovable(i.panelX, i.panelY, false);
 	}
 }
 
@@ -312,25 +325,25 @@ bool Map::canMove(int panelX, int panelY, Direction direction) {
 
 	if(nextX < 0 || nextX >= this->sizeX) return false;
 	if(nextY < 0 || nextY >= this->sizeY) return false;
-	if(this->body[calcIndex(nextX, nextY)].type == WALL) return false;
+	if(!this->movable[calcIndex(nextX, nextY)]) return false;
 
 	// 斜め移動の時は上と横も考える
 	// 後で剰余の式にして一発ですます
 	if(direction == RUP) {
-		if(this->body[calcIndex(nextX, nextY + 1)].type == WALL) return false;
-		if(this->body[calcIndex(nextX - 1, nextY)].type == WALL) return false;
+		if(!this->movable[calcIndex(nextX, nextY + 1)]) return false;
+		if(!this->movable[calcIndex(nextX - 1, nextY)]) return false;
 	}
 	if(direction == RDOWN) {
-		if(this->body[calcIndex(nextX, nextY - 1)].type == WALL) return false;
-		if(this->body[calcIndex(nextX - 1, nextY)].type == WALL) return false;
+		if(!this->movable[calcIndex(nextX, nextY - 1)]) return false;
+		if(!this->movable[calcIndex(nextX - 1, nextY)]) return false;
 	}
 	if(direction == LUP) {
-		if(this->body[calcIndex(nextX, nextY + 1)].type == WALL) return false;
-		if(this->body[calcIndex(nextX + 1, nextY)].type == WALL) return false;
+		if(!this->movable[calcIndex(nextX, nextY + 1)]) return false;
+		if(!this->movable[calcIndex(nextX + 1, nextY)]) return false;
 	}
 	if(direction == LDOWN) {
-		if(this->body[calcIndex(nextX, nextY - 1)].type == WALL) return false;
-		if(this->body[calcIndex(nextX + 1, nextY)].type == WALL) return false;
+		if(!this->movable[calcIndex(nextX, nextY - 1)]) return false;
+		if(!this->movable[calcIndex(nextX + 1, nextY)]) return false;
 	}
 
 	return true;
@@ -357,34 +370,46 @@ bool Map::keyProcessing() {
 	if(CheckHitKey(KEY_INPUT_UP)) {
 		if(CheckHitKey(KEY_INPUT_RIGHT)) {
 			if(!canMove(this->player->panelX, this->player->panelY, RUP)) return false;
+			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(RUP);
 		} else if(CheckHitKey(KEY_INPUT_LEFT)) {
 			if(!canMove(this->player->panelX, this->player->panelY, LUP)) return false;
+			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(LUP);
 		} else {
 			if(!canMove(this->player->panelX, this->player->panelY, UP)) return false;
+			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(UP);
 		}
+		setMovable(this->player->panelX, this->player->panelY, false);
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_DOWN)) {
 		if(CheckHitKey(KEY_INPUT_RIGHT)) {
 			if(!canMove(this->player->panelX, this->player->panelY, RDOWN)) return false;
+			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(RDOWN);
 		} else if(CheckHitKey(KEY_INPUT_LEFT)) {
 			if(!canMove(this->player->panelX, this->player->panelY, LDOWN)) return false;
+			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(LDOWN);
 		} else {
 			if(!canMove(this->player->panelX, this->player->panelY, DOWN)) return false;
+			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(DOWN);
 		}
+		setMovable(this->player->panelX, this->player->panelY, false);
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_RIGHT)) {
 		if(!canMove(this->player->panelX, this->player->panelY, RIGHT)) return false;
+		setMovable(this->player->panelX, this->player->panelY, true);
 		this->player->move(RIGHT);
+		setMovable(this->player->panelX, this->player->panelY, false);
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_LEFT)) {
 		if(!canMove(this->player->panelX, this->player->panelY, LEFT)) return false;
+		setMovable(this->player->panelX, this->player->panelY, true);
 		this->player->move(LEFT);
+		setMovable(this->player->panelX, this->player->panelY, false);
 		return true;
 	}
 
