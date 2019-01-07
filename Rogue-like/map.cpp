@@ -95,10 +95,14 @@ void Map::moveEnemys() {
 	}
 }
 
-void Map::moveAnimationEnemys() {
+bool Map::moveAnimationEnemys() {
+	bool ret = false;
 	for(auto &i : this->enemys) {
-		i.moveAnimation();
+		if(i.moveAnimation()) ret = true;
 	}
+
+	// ˆê‘Ì‚Å‚à“®‚¯‚½‚Æ‚« true
+	return ret;
 }
 
 void Map::DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY) {
@@ -353,19 +357,22 @@ bool Map::keyProcessing() {
 	if(CheckHitKey(KEY_INPUT_SPACE)) this->player->speed = 60;
 	else this->player->speed = 7;
 
-	/* if(CheckHitKey(KEY_INPUT_Z)) {
-			stage.attackPlayer();
-		} else */
-	if(CheckHitKey(KEY_INPUT_UP)) {
+	if(CheckHitKey(KEY_INPUT_Z)) {
+		this->player->attack();
+		return true;
+	} else if(CheckHitKey(KEY_INPUT_UP)) {
 		if(CheckHitKey(KEY_INPUT_RIGHT)) {
+			this->player->setFront(RUP);
 			if(!canMove(this->player->panelX, this->player->panelY, RUP)) return false;
 			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(RUP);
 		} else if(CheckHitKey(KEY_INPUT_LEFT)) {
+			this->player->setFront(LUP);
 			if(!canMove(this->player->panelX, this->player->panelY, LUP)) return false;
 			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(LUP);
 		} else {
+			this->player->setFront(UP);
 			if(!canMove(this->player->panelX, this->player->panelY, UP)) return false;
 			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(UP);
@@ -374,14 +381,17 @@ bool Map::keyProcessing() {
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_DOWN)) {
 		if(CheckHitKey(KEY_INPUT_RIGHT)) {
+			this->player->setFront(RDOWN);
 			if(!canMove(this->player->panelX, this->player->panelY, RDOWN)) return false;
 			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(RDOWN);
 		} else if(CheckHitKey(KEY_INPUT_LEFT)) {
+			this->player->setFront(LDOWN);
 			if(!canMove(this->player->panelX, this->player->panelY, LDOWN)) return false;
 			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(LDOWN);
 		} else {
+			this->player->setFront(DOWN);
 			if(!canMove(this->player->panelX, this->player->panelY, DOWN)) return false;
 			setMovable(this->player->panelX, this->player->panelY, true);
 			this->player->move(DOWN);
@@ -389,12 +399,14 @@ bool Map::keyProcessing() {
 		setMovable(this->player->panelX, this->player->panelY, false);
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_RIGHT)) {
+		this->player->setFront(RIGHT);
 		if(!canMove(this->player->panelX, this->player->panelY, RIGHT)) return false;
 		setMovable(this->player->panelX, this->player->panelY, true);
 		this->player->move(RIGHT);
 		setMovable(this->player->panelX, this->player->panelY, false);
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_LEFT)) {
+		this->player->setFront(LEFT);
 		if(!canMove(this->player->panelX, this->player->panelY, LEFT)) return false;
 		setMovable(this->player->panelX, this->player->panelY, true);
 		this->player->move(LEFT);

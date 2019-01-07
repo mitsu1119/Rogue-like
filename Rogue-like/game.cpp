@@ -1,6 +1,6 @@
 #include "game.h"
 
-Game::Game(int maxFocusX, int maxFocusY): turn(0), turnOld(-1), maxFocusX(maxFocusX), maxFocusY(maxFocusY) {
+Game::Game(int maxFocusX, int maxFocusY):attackPFlag(false), movePFlag(false), moveEFlag(false), maxFocusX(maxFocusX), maxFocusY(maxFocusY) {
 
 	// TODO: ウィンドウのサイズを自動所得するようにする
 	this->windowSizeX = 1400;
@@ -27,23 +27,34 @@ Game::~Game() {
 } 
 
 void Game::reflect() {
-	if(!this->player->isMoving()) {
-		this->turn = this->turnOld + 1;
+	if(!this->attackPFlag && !this->movePFlag && !this->moveEFlag) {
 		this->map->revice();
+		if(map->keyProcessing()) {
+			if(this->player->isMoving()) this->movePFlag = true;
+			else this->attackPFlag = true;
+			if(movePFlag) this->map->moveEnemys();
+		}
 	}
 
-	if(this->turn > this->turnOld) {
-		if(map->keyProcessing()) {
-			this->turnOld = this->turn;
+	if(this->movePFlag) {
+		int dx, dy;
+		this->map->moveAnimationEnemys();
+		if(!this->player->moveAnimation(dx, dy)) {
+			this->movePFlag = false;
+		}
+		this->map->scroll(-dx, -dy);
+	}
+
+	if(this->attackPFlag) {
+		if(!this->player->attackAnimation()) {
+			this->attackPFlag = false;
+			this->moveEFlag = true;
 			this->map->moveEnemys();
 		}
 	}
 
-	if(this->player->isMoving()) {
-		int dx, dy;
-		this->map->moveAnimationEnemys();
-		this->player->moveAnimation(dx, dy);
-		this->map->scroll(-dx, -dy);
+	if(this->moveEFlag) {
+		if(!this->map->moveAnimationEnemys()) moveEFlag = false;
 	}
 
 	map->DrawFocus();

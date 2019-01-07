@@ -124,7 +124,7 @@ public:
 	void revice();
 
 	void moveEnemys();
-	void moveAnimationEnemys();
+	bool moveAnimationEnemys();
 
 	void DrawMinimap(int screenSX, int screenSY);
 	void DrawFocus();

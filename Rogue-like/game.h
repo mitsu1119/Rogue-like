@@ -10,7 +10,7 @@ private:
 	// ウィンドウのサイズ
 	int windowSizeX, windowSizeY;
 
-	int turn, turnOld;
+	bool attackPFlag, movePFlag, moveEFlag;
 	int maxFocusX, maxFocusY;
 	std::vector<Pic> mapchips;
 

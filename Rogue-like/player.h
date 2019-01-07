@@ -12,6 +12,8 @@ protected:
 	Direction front;
 	int animationTime;
 
+	bool attackFlag;
+
 	// プレイヤーのいる最低限のマップの情報
 	int panelSize;
 
@@ -27,14 +29,20 @@ public:
 
 	// true:している false:してない
 	bool isMoving();
+	bool isAttacking();
 
 	void move(Direction direction);
-	void moveAnimation();
-	void moveAnimation(int &dx, int &dy);	// どのくらい動いたか知りたいとき
+	bool moveAnimation();
+	bool moveAnimation(int &dx, int &dy);	// どのくらい動いたか知りたいとき
 	void reviceCoord(bool harfX, bool harfY);
+
+	void attack();
+	bool attackAnimation();
 
 	// プレイヤーの実座標を (x, y) だけ平行移動
 	void shift(int x, int y);
+
+	void setFront(Direction front);
 
 	// 実座標の所得
 	int getx();
@@ -44,9 +52,6 @@ public:
 };
 
 class Enemy : public Player {
-private:
-	void setDirection(Direction direction);
-
 public:
 	Enemy(int panelX, int panelY, int speed, Pic pic, int panelSize);
 };
