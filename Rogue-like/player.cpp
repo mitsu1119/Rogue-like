@@ -1,10 +1,12 @@
 #include "player.h"
 
-Player::Player(int speed, Pic pic, int panelSize):x(0), y(0), pic(pic), speed(speed), panelX(0), panelY(0), panelSize(panelSize), moveFlag(false), attackFlag(false), animationTime(0) {
+Parameter::Parameter(int hp, int at):hp(hp), at(at) {}
+
+Player::Player(int speed, Pic pic, int panelSize, Parameter param):x(0), y(0), pic(pic), speed(speed), panelX(0), panelY(0), panelSize(panelSize), moveFlag(false), attackFlag(false), animationTime(0), param(param) {
 	this->front = (Direction)randAtoB(0, DirectionNum - 1);
 }
 
-Player::Player(int panelX, int panelY, int speed, Pic pic, int panelSize): x(0), y(0), pic(pic), speed(speed), panelX(panelX), panelY(panelY), panelSize(panelSize), moveFlag(false), attackFlag(false), animationTime(0) {}
+Player::Player(int panelX, int panelY, int speed, Pic pic, int panelSize, Parameter param): x(0), y(0), pic(pic), speed(speed), panelX(panelX), panelY(panelY), panelSize(panelSize), moveFlag(false), attackFlag(false), animationTime(0), param(param) {}
 
 bool Player::isMoving() {
 	return this->moveFlag;
@@ -54,9 +56,10 @@ void Player::reviceCoord(bool harfX, bool harfY) {
 	if(harfY) this->y -= this->pic.sizeY / 2;
 }
 
-void Player::attack() {
+Direction Player::attack() {
 	this->attackFlag = true;
 	this->animationTime = 12;
+	return this->front;
 }
 
 bool Player::attackAnimation() {
@@ -96,6 +99,6 @@ void Player::Draw() {
 	DrawGraph(this->x, this->y, this->pic.handle, true);
 }
 
-Enemy::Enemy(int panelX, int panelY, int speed, Pic pic, int panelSize):Player(panelX, panelY, speed, pic, panelSize){
+Enemy::Enemy(int panelX, int panelY, int speed, Pic pic, int panelSize, Parameter param):Player(panelX, panelY, speed, pic, panelSize, param){
 	this->front = (Direction)randAtoB(0, DirectionNum - 1);
 }

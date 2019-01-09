@@ -2,6 +2,14 @@
 #include "useful.h"
 #include "DxLib.h"
 
+class Parameter {
+protected:
+	int hp, at;
+
+public:
+	Parameter(int hp, int at);
+};
+
 class Player {
 protected:
 	// スクリーン座標
@@ -18,10 +26,12 @@ protected:
 	int panelSize;
 
 	Pic pic;
+	
+	Parameter param;
 
 public:
-	Player(int speed, Pic pic, int panelSize);
-	Player(int panelX, int panelY, int speed, Pic pic, int panelSize);	// enemy用
+	Player(int speed, Pic pic, int panelSize, Parameter param);
+	Player(int panelX, int panelY, int speed, Pic pic, int panelSize, Parameter param);	// enemy用
 
 	// パネルの座標
 	int panelX, panelY;
@@ -36,7 +46,7 @@ public:
 	bool moveAnimation(int &dx, int &dy);	// どのくらい動いたか知りたいとき
 	void reviceCoord(bool harfX, bool harfY);
 
-	void attack();
+	Direction attack();
 	bool attackAnimation();
 
 	// プレイヤーの実座標を (x, y) だけ平行移動
@@ -53,5 +63,5 @@ public:
 
 class Enemy : public Player {
 public:
-	Enemy(int panelX, int panelY, int speed, Pic pic, int panelSize);
+	Enemy(int panelX, int panelY, int speed, Pic pic, int panelSize, Parameter param);
 };

@@ -108,8 +108,12 @@ public:
 		return this->sizeX*y + x;
 	}
 
-	void setMovable(int panelX, int panelY, bool flag) {
-		this->movable[calcIndex(panelX, panelY)] = flag;
+	void beMovable(int panelX, int panelY) {
+		this->movable[calcIndex(panelX, panelY)] = true;
+	}
+
+	void dontbeMovable(int panelX, int panelY) {
+		this->movable[calcIndex(panelX, panelY)] = false;
 	}
 
 	// ƒL[‚ª‰Ÿ‚³‚ê‚½: true
@@ -125,6 +129,7 @@ public:
 
 	void moveEnemys();
 	bool moveAnimationEnemys();
+	void dieEnemy(int panelX, int panelY);
 
 	void DrawMinimap(int screenSX, int screenSY);
 	void DrawFocus();

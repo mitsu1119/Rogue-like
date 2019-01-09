@@ -23,7 +23,7 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 	for(int i = 0; i < this->sizeY; i++) {
 		for(int j = 0; j < this->sizeX; j++) {
 			if(this->body[calcIndex(j, i)].type == ROAD && GetRand(100) == 0) {
-				this->enemys.emplace_back(j, i, player->speed, enemy, this->mapchips[ROAD].sizeX);
+				this->enemys.emplace_back(j, i, player->speed, enemy, this->mapchips[ROAD].sizeX, Parameter(20, 0));
 				this->movable[calcIndex(j, i)] = false;
 			}
 		}
@@ -89,9 +89,9 @@ void Map::moveEnemys() {
 		do {
 			dir = (Direction)randAtoB(0, DirectionNum - 1);
 		} while(!canMove(i.panelX, i.panelY, dir));
-		setMovable(i.panelX, i.panelY, true);
+		beMovable(i.panelX, i.panelY);
 		i.move(dir);
-		setMovable(i.panelX, i.panelY, false);
+		dontbeMovable(i.panelX, i.panelY);
 	}
 }
 
@@ -103,6 +103,16 @@ bool Map::moveAnimationEnemys() {
 
 	// ˆê‘Ì‚Å‚à“®‚¯‚½‚Æ‚« true
 	return ret;
+}
+
+void Map::dieEnemy(int panelX, int panelY) {
+	for(int i = 0; i<(int)this->enemys.size(); i++) {
+		if(this->enemys[i].panelX == panelX && this->enemys[i].panelY == panelY) {
+			this->enemys.erase(this->enemys.begin() + i);
+			beMovable(panelX, panelY);
+			break;
+		}
+	}
 }
 
 void Map::DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY) {
@@ -358,59 +368,60 @@ bool Map::keyProcessing() {
 	else this->player->speed = 7;
 
 	if(CheckHitKey(KEY_INPUT_Z)) {
-		this->player->attack();
+		Direction dir = this->player->attack();
+		dieEnemy(this->player->panelX + directionDx(dir), this->player->panelY + directionDy(dir));
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_UP)) {
 		if(CheckHitKey(KEY_INPUT_RIGHT)) {
 			this->player->setFront(RUP);
 			if(!canMove(this->player->panelX, this->player->panelY, RUP)) return false;
-			setMovable(this->player->panelX, this->player->panelY, true);
+			beMovable(this->player->panelX, this->player->panelY);
 			this->player->move(RUP);
 		} else if(CheckHitKey(KEY_INPUT_LEFT)) {
 			this->player->setFront(LUP);
 			if(!canMove(this->player->panelX, this->player->panelY, LUP)) return false;
-			setMovable(this->player->panelX, this->player->panelY, true);
+			beMovable(this->player->panelX, this->player->panelY);
 			this->player->move(LUP);
 		} else {
 			this->player->setFront(UP);
 			if(!canMove(this->player->panelX, this->player->panelY, UP)) return false;
-			setMovable(this->player->panelX, this->player->panelY, true);
+			beMovable(this->player->panelX, this->player->panelY);
 			this->player->move(UP);
 		}
-		setMovable(this->player->panelX, this->player->panelY, false);
+		dontbeMovable(this->player->panelX, this->player->panelY);
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_DOWN)) {
 		if(CheckHitKey(KEY_INPUT_RIGHT)) {
 			this->player->setFront(RDOWN);
 			if(!canMove(this->player->panelX, this->player->panelY, RDOWN)) return false;
-			setMovable(this->player->panelX, this->player->panelY, true);
+			beMovable(this->player->panelX, this->player->panelY);
 			this->player->move(RDOWN);
 		} else if(CheckHitKey(KEY_INPUT_LEFT)) {
 			this->player->setFront(LDOWN);
 			if(!canMove(this->player->panelX, this->player->panelY, LDOWN)) return false;
-			setMovable(this->player->panelX, this->player->panelY, true);
+			beMovable(this->player->panelX, this->player->panelY);
 			this->player->move(LDOWN);
 		} else {
 			this->player->setFront(DOWN);
 			if(!canMove(this->player->panelX, this->player->panelY, DOWN)) return false;
-			setMovable(this->player->panelX, this->player->panelY, true);
+			beMovable(this->player->panelX, this->player->panelY);
 			this->player->move(DOWN);
 		}
-		setMovable(this->player->panelX, this->player->panelY, false);
+		dontbeMovable(this->player->panelX, this->player->panelY);
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_RIGHT)) {
 		this->player->setFront(RIGHT);
 		if(!canMove(this->player->panelX, this->player->panelY, RIGHT)) return false;
-		setMovable(this->player->panelX, this->player->panelY, true);
+		beMovable(this->player->panelX, this->player->panelY);
 		this->player->move(RIGHT);
-		setMovable(this->player->panelX, this->player->panelY, false);
+		dontbeMovable(this->player->panelX, this->player->panelY);
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_LEFT)) {
 		this->player->setFront(LEFT);
 		if(!canMove(this->player->panelX, this->player->panelY, LEFT)) return false;
-		setMovable(this->player->panelX, this->player->panelY, true);
+		beMovable(this->player->panelX, this->player->panelY);
 		this->player->move(LEFT);
-		setMovable(this->player->panelX, this->player->panelY, false);
+		dontbeMovable(this->player->panelX, this->player->panelY);
 		return true;
 	}
 
