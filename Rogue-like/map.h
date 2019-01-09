@@ -97,6 +97,9 @@ private:
 	Player *player;
 	std::vector<Enemy> enemys;
 
+	// (panelX, panelY) にいる敵のインデックスを返す
+	int searchEnemy(int panelX, int panelY);
+
 public:
 	Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player);
 	~Map();
@@ -129,7 +132,7 @@ public:
 
 	void moveEnemys();
 	bool moveAnimationEnemys();
-	void dieEnemy(int panelX, int panelY);
+	void dieEnemy(int index);
 
 	void DrawMinimap(int screenSX, int screenSY);
 	void DrawFocus();

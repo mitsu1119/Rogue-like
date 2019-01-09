@@ -2,6 +2,18 @@
 
 Parameter::Parameter(int hp, int at):hp(hp), at(at) {}
 
+int Parameter::getHp() {
+	return this->hp;
+}
+
+void Parameter::decreaseHp(int point) {
+	this->hp -= point;
+}
+
+int Parameter::getAt() {
+	return this->at;
+}
+
 Player::Player(int speed, Pic pic, int panelSize, Parameter param):x(0), y(0), pic(pic), speed(speed), panelX(0), panelY(0), panelSize(panelSize), moveFlag(false), attackFlag(false), animationTime(0), param(param) {
 	this->front = (Direction)randAtoB(0, DirectionNum - 1);
 }
@@ -95,10 +107,23 @@ int Player::gety() {
 	return this->y;
 }
 
+void Player::damaged(int damage) {
+	this->param.decreaseHp(damage);
+}
+
+int Player::calcDamage(int defence) {
+	return this->param.getAt() - defence;
+}
+
 void Player::Draw() {
 	DrawGraph(this->x, this->y, this->pic.handle, true);
 }
 
 Enemy::Enemy(int panelX, int panelY, int speed, Pic pic, int panelSize, Parameter param):Player(panelX, panelY, speed, pic, panelSize, param){
 	this->front = (Direction)randAtoB(0, DirectionNum - 1);
+}
+
+bool Enemy::isDead() {
+	if(this->param.getHp() <= 0) return true;
+	return false;
 }

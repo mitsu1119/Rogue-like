@@ -8,6 +8,11 @@ protected:
 
 public:
 	Parameter(int hp, int at);
+
+	int getHp();
+	void decreaseHp(int point);
+
+	int getAt();
 };
 
 class Player {
@@ -58,10 +63,15 @@ public:
 	int getx();
 	int gety();
 
+	void damaged(int damage);
+	int calcDamage(int defence);
+
 	void Draw();
 };
 
 class Enemy : public Player {
 public:
 	Enemy(int panelX, int panelY, int speed, Pic pic, int panelSize, Parameter param);
+
+	bool isDead();
 };

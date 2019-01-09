@@ -23,7 +23,7 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 	for(int i = 0; i < this->sizeY; i++) {
 		for(int j = 0; j < this->sizeX; j++) {
 			if(this->body[calcIndex(j, i)].type == ROAD && GetRand(100) == 0) {
-				this->enemys.emplace_back(j, i, player->speed, enemy, this->mapchips[ROAD].sizeX, Parameter(20, 0));
+				this->enemys.emplace_back(j, i, player->speed, enemy, this->mapchips[ROAD].sizeX, Parameter(50, 0));
 				this->movable[calcIndex(j, i)] = false;
 			}
 		}
@@ -105,13 +105,20 @@ bool Map::moveAnimationEnemys() {
 	return ret;
 }
 
-void Map::dieEnemy(int panelX, int panelY) {
+int Map::searchEnemy(int panelX, int panelY) {
 	for(int i = 0; i<(int)this->enemys.size(); i++) {
 		if(this->enemys[i].panelX == panelX && this->enemys[i].panelY == panelY) {
-			this->enemys.erase(this->enemys.begin() + i);
-			beMovable(panelX, panelY);
-			break;
+			return i;
 		}
+	}
+
+	return -1;
+}
+
+void Map::dieEnemy(int index) {
+	if(index >= 0 && index < this->enemys.size() && this->enemys[index].isDead()) {
+		beMovable(this->enemys[index].panelX, this->enemys[index].panelY);
+		this->enemys.erase(this->enemys.begin() + index);
 	}
 }
 
@@ -369,7 +376,11 @@ bool Map::keyProcessing() {
 
 	if(CheckHitKey(KEY_INPUT_Z)) {
 		Direction dir = this->player->attack();
-		dieEnemy(this->player->panelX + directionDx(dir), this->player->panelY + directionDy(dir));
+		int e = searchEnemy(this->player->panelX + directionDx(dir), this->player->panelY + directionDy(dir));
+		if(e != -1){
+			this->enemys[e].damaged(this->player->calcDamage(0));
+			if(this->enemys[e].isDead()) dieEnemy(e);
+		}
 		return true;
 	} else if(CheckHitKey(KEY_INPUT_UP)) {
 		if(CheckHitKey(KEY_INPUT_RIGHT)) {

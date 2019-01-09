@@ -15,7 +15,7 @@ Game::Game(int maxFocusX, int maxFocusY):attackPFlag(false), movePFlag(false), m
 	mapchips.emplace_back(Pic(LoadGraph("dat\\minienemy.png"), 6, 6));
 
 	Pic playerPic(LoadGraph("dat\\player.png"), 100, 100);
-	player = new Player(7, playerPic, mapchips[ROAD].sizeX, Parameter(100, 20));
+	player = new Player(7, playerPic, mapchips[ROAD].sizeX, Parameter(100, 40));
 
 	// プレイヤーのパネル座標及び実座標はmap生成時に自動で決定される
 	map = new Map(60, 46, this->mapchips, this->maxFocusX, this->maxFocusY, this->player);
