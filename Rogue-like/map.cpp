@@ -136,20 +136,25 @@ void Map::dieEnemy(int index) {
 }
 
 void Map::DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY) {
-	int xsum = 0, ysum = 0;
+	int xsum, ysum;
+	int initxsum = this->mapchips.at(this->body[0].type).sizeX * (std::max)(0, panelSX);
+	int initysum = this->mapchips.at(this->body[0].type).sizeY * (std::max)(0, panelSY);
 
-	for(int i = panelSY; i <= panelEY; i++) {
-		for(int j = panelSX; j <= panelEX; j++) {
+	xsum = initxsum;
+	ysum = initysum;
+
+	for(int i = (std::max)(0, panelSY); i <= (std::min)(panelEY, this->sizeY - 1); i++) {
+		for(int j = (std::max)(0, panelSX); j <= (std::min)(panelEX, this->sizeX - 1); j++) {
 			DrawGraph(screenSX + xsum, screenSY + ysum, this->mapchips.at(this->body[calcIndex(j, i)].type).handle, true);
 			xsum +=this->mapchips.at(this->body[calcIndex(j, i)].type).sizeX;
 		}
-		xsum = 0;
-		ysum +=this->mapchips.at(this->body[calcIndex(panelEX, i)].type).sizeY;
+		xsum = initxsum;
+		ysum +=this->mapchips.at(this->body[0].type).sizeY;
 	}
 }
 
 void Map::DrawPt(int screenSX, int screenSY) {
-	DrawPart(screenSX, screenSY, 0, 0, this->sizeX - 1, this->sizeY - 1);
+	DrawPart(screenSX, screenSY, this->player->panelX - this->focusPanelX/2-1, this->player->panelY - this->focusPanelY/2-1, this->player->panelX + this->focusPanelX/2+1, this->player->panelY + this->focusPanelY/2+1);
 }
 
 void Map::DrawMinimap(int screenSX, int screenSY) {
