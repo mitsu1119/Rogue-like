@@ -8,7 +8,15 @@
 // パネルの型情報のリスト
 // マップチップもこの順で作る
 enum PanelType {
-	WALL, ROAD, MINI_WALL, MINI_ROAD, MINI_PLAYER, MINI_ENEMY, TypeNum
+	WALL, ROAD, STAIRS, MINI_WALL, MINI_ROAD, MINI_STAIRS, MINI_PLAYER, MINI_ENEMY, TypeNum
+};
+
+class Trap {
+public:
+	Trap(int panelX, int panelY, PanelType type):panelX(panelX), panelY(panelY), type(type) {}
+
+	int panelX, panelY;
+	PanelType type;
 };
 
 // パネル一枚一枚
@@ -96,6 +104,8 @@ private:
 
 	Player *player;
 	std::vector<Enemy> enemys;
+	bool nextMapFlag;
+	std::vector<Trap> traps;
 
 	// (panelX, panelY) にいる敵のインデックスを返す
 	int searchEnemy(int panelX, int panelY);
@@ -119,8 +129,13 @@ public:
 		this->movable[calcIndex(panelX, panelY)] = false;
 	}
 
+	bool canThisGetNextMap() {
+		return this->nextMapFlag;
+	}
+
 	// キーが押された: true
 	bool keyProcessing();
+	void trapProcessing();
 
 	// 実座標でスクロール
 	void scroll(int x, int y);
@@ -136,4 +151,6 @@ public:
 
 	void DrawMinimap(int screenSX, int screenSY);
 	void DrawFocus();
+
+	void nextMap();
 }; 

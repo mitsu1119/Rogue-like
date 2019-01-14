@@ -1,6 +1,7 @@
 #include "map.h"
 
-Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips), focusPanelX(focusPanelX), focusPanelY(focusPanelY), player(player) {
+Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int focusPanelY, Player *player):sizeX(sizeX), sizeY(sizeY), mapchips(mapchips), focusPanelX(focusPanelX), focusPanelY(focusPanelY), player(player),
+nextMapFlag(false) {
 	SRand(GetNowCount());
 	this->body = std::vector<Panel>(sizeX*sizeY);
 	this->minibody = std::vector<Panel>(sizeX*sizeY);
@@ -22,7 +23,7 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 	Pic enemy = Pic(LoadGraph("dat\\enemy.png"), 100, 100);
 	for(int i = 0; i < this->sizeY; i++) {
 		for(int j = 0; j < this->sizeX; j++) {
-			if(this->body[calcIndex(j, i)].type == ROAD && GetRand(100) == 0) {
+			if(this->body[calcIndex(j, i)].type == ROAD && GetRand(200) == 0) {
 				this->enemys.emplace_back(j, i, player->speed, enemy, this->mapchips[ROAD].sizeX, Parameter(50, 0));
 				this->movable[calcIndex(j, i)] = false;
 			}
@@ -34,6 +35,14 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 	this->player->panelX = randAtoB(this->rects[randrect]->room->sx, this->rects[randrect]->room->ex);
 	this->player->panelY = randAtoB(this->rects[randrect]->room->sy, this->rects[randrect]->room->ey);
 	this->movable[calcIndex(this->player->panelX, this->player->panelY)] = false;
+
+	// 階段の配置
+	randrect = GetRand((int)this->rects.size() - 1);
+	int stairsPanelX = randAtoB(this->rects[randrect]->room->sx, this->rects[randrect]->room->ex);
+	int stairsPanelY = randAtoB(this->rects[randrect]->room->sy, this->rects[randrect]->room->ey);
+	this->body[calcIndex(stairsPanelX, stairsPanelY)].type = STAIRS;
+	this->movable[calcIndex(stairsPanelX, stairsPanelY)] = true;
+	this->traps.emplace_back(stairsPanelX, stairsPanelY, STAIRS);
 	
 	// ミニマップを生成
 	for(int i = 0; i < (int)this->minibody.size(); i++) {
@@ -43,6 +52,10 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 			break;
 		case ROAD:
 			this->minibody[i].type = MINI_ROAD;
+			break;
+		case STAIRS:
+			this->minibody[i].type = MINI_STAIRS;
+			break;
 		};
 	}
 	revice();
@@ -302,7 +315,6 @@ void Map::reflectRects() {
 		}
 	}
 
-
 	// 部屋から通路を伸ばす
 	int rect0x, rect0y, rect1x, rect1y;
 	for(auto i : this->roomPairs) {
@@ -439,6 +451,20 @@ bool Map::keyProcessing() {
 	return false;
 }
 
+void Map::trapProcessing() {
+	for(auto i: this->traps) {
+		if(i.panelX == this->player->panelX && i.panelY == this->player->panelY) {
+			switch(i.type) {
+			case STAIRS:
+				nextMap();
+				return;
+			default:
+				break;
+			};
+		}
+	}
+}
+
 void Map::scroll(int x, int y) {
 	this->cameraX += x;
 	this->cameraY += y;
@@ -448,4 +474,8 @@ void Map::scroll(int x, int y) {
 
 void Map::scrollPanel(int panelX, int panelY) {
 	scroll(this->mapchips[ROAD].sizeX * panelX, this->mapchips[ROAD].sizeY * panelY);
+}
+
+void Map::nextMap() {
+	this->nextMapFlag = true;
 }

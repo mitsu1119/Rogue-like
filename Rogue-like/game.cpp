@@ -9,8 +9,10 @@ Game::Game(int maxFocusX, int maxFocusY):attackPFlag(false), movePFlag(false), m
 	// TODO: 一枚の画像を分割してマップチップにできるようにする
 	mapchips.emplace_back(Pic(LoadGraph("dat\\wall.png"), 100, 100));
 	mapchips.emplace_back(Pic(LoadGraph("dat\\road.png"), 100, 100));
+	mapchips.emplace_back(Pic(LoadGraph("dat\\stairs.png"), 100, 100));
 	mapchips.emplace_back(Pic(LoadGraph("dat\\miniwall.png"), 6, 6));
 	mapchips.emplace_back(Pic(LoadGraph("dat\\miniroad.png"), 6, 6));
+	mapchips.emplace_back(Pic(LoadGraph("dat\\ministairs.png"), 6, 6));
 	mapchips.emplace_back(Pic(LoadGraph("dat\\miniplayer.png"), 6, 6));
 	mapchips.emplace_back(Pic(LoadGraph("dat\\minienemy.png"), 6, 6));
 
@@ -18,7 +20,7 @@ Game::Game(int maxFocusX, int maxFocusY):attackPFlag(false), movePFlag(false), m
 	player = new Player(7, playerPic, mapchips[ROAD].sizeX, Parameter(100, 40));
 
 	// プレイヤーのパネル座標及び実座標はmap生成時に自動で決定される
-	map = new Map(60, 46, this->mapchips, this->maxFocusX, this->maxFocusY, this->player);
+	map = new Map(100, 50, this->mapchips, this->maxFocusX, this->maxFocusY, this->player);
 } 
 
 Game::~Game() {
@@ -27,6 +29,11 @@ Game::~Game() {
 } 
 
 void Game::reflect() {
+	if(this->map->canThisGetNextMap()) {
+		delete this->map;
+		map = new Map(100, 50, this->mapchips, this->maxFocusX, this->maxFocusY, this->player);
+	}
+
 	if(!this->attackPFlag && !this->movePFlag && !this->moveEFlag) {
 		this->map->revice();
 		if(map->keyProcessing()) {
@@ -34,7 +41,6 @@ void Game::reflect() {
 				this->movePFlag = true;
 			} else {
 				this->attackPFlag = true;
-			
 			}
 			if(movePFlag) this->map->moveEnemys();
 		}
@@ -45,6 +51,7 @@ void Game::reflect() {
 		this->map->moveAnimationEnemys();
 		if(!this->player->moveAnimation(dx, dy)) {
 			this->movePFlag = false;
+			this->map->trapProcessing();
 		}
 		this->map->scroll(-dx, -dy);
 	}
