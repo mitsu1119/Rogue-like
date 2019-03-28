@@ -4,13 +4,127 @@ Map::Map(int sizeX, int sizeY, std::vector<Pic> mapchips, int focusPanelX, int f
 nextMapFlag(false) {
 	SRand(GetNowCount());
 	this->body = std::vector<Panel>(sizeX*sizeY);
+	this->body2 = std::vector<Panel>(sizeX * sizeY, Panel(TypeNum));
+	this->body3 = std::vector<Panel>(sizeX * sizeY, Panel(TypeNum));
 	this->minibody = std::vector<Panel>(sizeX*sizeY);
 
 	// body を自動生成
 	genRndMap();
+	for(size_t i = 0; i < body.size(); i++) {
+		// 壁の整形(右側などの割り当て)
+		// 四隅
+		if(i == 0 || i == sizeX - 1 || i == this->body.size() - sizeX || i == this->body.size() - 1) {
+			this->body[i].type = WALL;
+			continue;
+		}
+		if(this->body[i].type == WALL_DOWN) {
+			// 四辺
+			// 上
+			if(i > 0 && i < sizeX && this->body[i + sizeX].type != ROAD) {
+				this->body[i].type = WALL;
+				continue;
+			}
+			// 右
+			if(i % sizeX == sizeX - 1 && this->body[i - 1].type != ROAD) {
+				this->body[i].type = WALL;
+				continue;
+			}
+			// 下
+			if(i >= this->body.size() - sizeX && this->body[i - sizeX].type != ROAD) {
+				this->body[i].type = WALL;
+				continue;
+			}
+			// 左
+			if(i % sizeX == 0 && this->body[i + 1].type != ROAD) {
+				this->body[i].type = WALL;
+				continue;
+			}
+
+			// 四隅と辺 以外のところ(真ん中の部分)
+			if(i % sizeX != 0 && i % sizeX != sizeX - 1 && this->body[i + 1].type == ROAD && this->body[i - 1].type == ROAD) {
+				if(i < this->body.size() - sizeX && this->body[i + sizeX].type == ROAD) this->body[i].type = WALL_SINGLEDOWN;
+				else this->body[i].type = WALL_SINGLE;
+				continue;
+			}
+			if(i <= this->body.size() - 1 - sizeX && i >= sizeX && i % sizeX != 0 && i % sizeX != sizeX - 1 &&
+				this->body[i - 1].type != ROAD && this->body[i + 1].type != ROAD && this->body[i + sizeX].type != ROAD) {
+				this->body[i].type = WALL;
+				continue;
+			}
+			if(i < this->body.size() - 1 - sizeX && this->body[i + 1].type == ROAD && this->body[i + sizeX].type  == ROAD) {
+				this->body[i].type = WALL_RDOWN;
+				continue;
+			}
+			if(i > 0 && i < this->body.size() - 1 - sizeX && this->body[i - 1].type == ROAD && this->body[i + sizeX].type == ROAD) {
+				this->body[i].type = WALL_LDOWN;
+				continue;
+			}
+			if(i % sizeX != sizeX - 1 && this->body[i + 1].type == ROAD) {
+				this->body[i].type = WALL_RIGHT;
+				continue;
+			}
+			if(i % sizeX != 0 && this->body[i - 1].type == ROAD) {
+				this->body[i].type = WALL_LEFT;
+				continue;
+			}
+		}
+	}
+	for(size_t i = 0; i < body.size(); i++) {
+		// 内側の整形
+		// inldown など
+		if(this->body[i].type != ROAD) {
+			if(i < this->body.size() - sizeX && i % sizeX != 0 && (this->body[i + sizeX].type == WALL_LDOWN || this->body[i + sizeX].type ==WALL_LEFT) && 
+				(this->body[i - 1].type == WALL || this->body[i - 1].type == WALL_DOWN || this->body[i - 1].type == WALL_LDOWN)) {
+				this->body[i].type = WALL_INRUP;
+			}
+			if(i % sizeX != 0 && i > sizeX && i < this->body.size() - sizeX && (this->body[i  - sizeX].type == WALL_LEFT) &&
+				(this->body[i - 1].type == WALL || this->body[i - 1].type == WALL_LEFT || this->body[i - 1].type == WALL_LEFT || this->body[i - 1].type == WALL_DOWN)) {
+				this->body[i - sizeX].type = WALL_INRDOWN;
+			}
+			if(i % sizeX != sizeX - 1 && i > sizeX && i < this->body.size() - sizeX && (this->body[i - sizeX].type == WALL_RIGHT) &&
+				(this->body[i + 1].type == WALL || this->body[i + 1].type == WALL_RIGHT || this->body[i + 1].type == WALL_RIGHT || this->body[i + 1].type == WALL_DOWN)) {
+				this->body[i - sizeX].type = WALL_INLDOWN;
+			}
+			if(i % sizeX != sizeX - 1 && i < this->body.size() - sizeX && (this->body[i + 1].type == WALL_DOWN || this->body[i + 1].type == WALL_RDOWN) && (this->body[i + sizeX].type == WALL_RIGHT || this->body[i + sizeX].type == WALL_RDOWN)) {
+				this->body[i].type = WALL_INLUP;
+			}
+			if(i > sizeX && (this->body[i].type == WALL_SINGLE || this->body[i].type == WALL_SINGLEDOWN) && this->body[i - sizeX].type == WALL /* 実質 WALLDOWN */) {
+				this->body[i - sizeX].type = WALL_SINGLE_JOINTDOWN;
+			}
+			if(i > sizeX && (this->body[i].type == WALL_SINGLE || this->body[i].type == WALL_SINGLEDOWN) && this->body[i - sizeX].type == WALL_RIGHT) {
+				this->body[i - sizeX].type = WALL_SINGLE_JOINTRIGHT_UP;
+			}
+			if(i > sizeX && (this->body[i].type == WALL_SINGLE || this->body[i].type == WALL_SINGLEDOWN) && this->body[i - sizeX].type == WALL_LEFT) {
+				this->body[i - sizeX].type = WALL_SINGLE_JOINTLEFT_UP;
+			}
+			if(i < this->body.size() - sizeX && this->body[i].type == WALL_SINGLE && this->body[i + sizeX].type == WALL_RIGHT) {
+				this->body[i].type = WALL_SINGLE_JOINTRIGHT_DOWN;
+			}
+			if(i < this->body.size() - sizeX && this->body[i].type == WALL_SINGLE && this->body[i + sizeX].type == WALL_LEFT) {
+				this->body[i].type = WALL_SINGLE_JOINTLEFT_DOWN;
+			}
+		}
+	}
+
 	for(auto &i : this->body) {
 		switch(i.type) {
+		case WALL_RIGHT:
+		case WALL_RDOWN:
+		case WALL_DOWN:
+		case WALL_LDOWN:
+		case WALL_LEFT:
 		case WALL:
+		case WALL_INRUP:
+		case WALL_INRDOWN:
+		case WALL_INLUP:
+		case WALL_INLDOWN:
+		case WALL_SINGLEDOWN:
+		case WALL_SINGLE:
+		case WALL_SINGLE_JOINTDOWN:
+		case WALL_SINGLE_JOINTRIGHT_UP:
+		case WALL_SINGLE_JOINTLEFT_UP:
+		case WALL_SINGLE_JOINTRIGHT_DOWN:
+		case WALL_SINGLE_JOINTLEFT_DOWN:
 			this->movable.emplace_back(false);
 			break;
 		default:
@@ -18,13 +132,54 @@ nextMapFlag(false) {
 		};
 	}
 
+	// body2,3 を生成
+	for(size_t i = sizeX; i < body.size(); i++) {
+		if((body[i].type == WALL_DOWN || body[i].type == WALL || body[i].type == WALL_INLUP || body[i].type == WALL_INRUP) && body[i - sizeX].type == ROAD) {
+			this->body2[i - sizeX] = WALL_UP;
+			continue;
+		}
+		if((body[i].type == WALL_RIGHT || body[i].type == WALL_RDOWN || body[i].type == WALL_INLDOWN) && body[i - sizeX].type == ROAD) {
+			this->body2[i - sizeX] = WALL_RUP;
+			continue;
+		}
+		if((body[i].type == WALL_LEFT || body[i].type == WALL_LDOWN || body[i].type == WALL_INRDOWN) && body[i - sizeX].type == ROAD) {
+			this->body2[i - sizeX] = WALL_LUP;
+			continue;
+		}
+		if(body[i].type == WALL_SINGLE) {
+			this->body2[i + 1] = WALL_SINGLERIGHT;
+			this->body3[i - 1] = WALL_SINGLELEFT;
+			if(body[i - sizeX].type != WALL_SINGLE) {
+				this->body2[i + 1 - sizeX] = WALL_SINGLERUP;
+				this->body2[i - 1 - sizeX] = WALL_SINGLELUP;
+				this->body2[i  - sizeX] = WALL_UP;
+			}
+			continue;
+		}
+		if(body[i].type == WALL_SINGLEDOWN && body[i - sizeX].type != WALL_SINGLE) {
+			this->body3[i + 1] = WALL_SINGLERDOWN;
+			this->body3[i - 1] = WALL_SINGLELDOWN;
+			this->body2[i - sizeX] = WALL_UP;
+			continue;
+		}
+	}
+
 	// 敵の生成
-	// enemy は後でデータベースを作っておく
-	Pic enemy = Pic(LoadGraph("dat\\enemy.png"), 100, 100);
+	// TODO: Enemyのデータベースを作る
+	std::vector<Pic> pup = {Pic(LoadGraph("dat\\enemy_up1.png"), 100, 200), Pic(LoadGraph("dat\\enemy_up2.png"), 100, 200), Pic(LoadGraph("dat\\enemy_up3.png"), 100, 200), Pic(LoadGraph("dat\\enemy_up4.png"), 100, 200)};
+	std::vector<Pic> prup = {Pic(LoadGraph("dat\\enemy_rup1.png"), 100, 200), Pic(LoadGraph("dat\\enemy_rup2.png"), 100, 200), Pic(LoadGraph("dat\\enemy_rup3.png"), 100, 200), Pic(LoadGraph("dat\\enemy_rup4.png"), 100, 200)};
+	std::vector<Pic> pright = {Pic(LoadGraph("dat\\enemy_right1.png"), 100, 200), Pic(LoadGraph("dat\\enemy_right2.png"), 100, 200), Pic(LoadGraph("dat\\enemy_right3.png"), 100, 200), Pic(LoadGraph("dat\\enemy_right4.png"), 100, 200)};
+	std::vector<Pic> prdown = {Pic(LoadGraph("dat\\enemy_rdown1.png"), 100, 200), Pic(LoadGraph("dat\\enemy_rdown2.png"), 100, 200), Pic(LoadGraph("dat\\enemy_rdown3.png"), 100, 200), Pic(LoadGraph("dat\\enemy_rdown4.png"), 100, 200)};
+	std::vector<Pic> pdown = {Pic(LoadGraph("dat\\enemy_down1.png"), 100, 200), Pic(LoadGraph("dat\\enemy_down2.png"), 100, 200), Pic(LoadGraph("dat\\enemy_down3.png"), 100, 200), Pic(LoadGraph("dat\\enemy_down4.png"), 100, 200)};
+	std::vector<Pic> pldown = {Pic(LoadGraph("dat\\enemy_ldown1.png"), 100, 200), Pic(LoadGraph("dat\\enemy_ldown2.png"), 100, 200), Pic(LoadGraph("dat\\enemy_ldown3.png"), 100, 200), Pic(LoadGraph("dat\\enemy_ldown4.png"), 100, 200)};
+	std::vector<Pic> pleft = {Pic(LoadGraph("dat\\enemy_left1.png"), 100, 200), Pic(LoadGraph("dat\\enemy_left2.png"), 100, 200), Pic(LoadGraph("dat\\enemy_left3.png"), 100, 200), Pic(LoadGraph("dat\\enemy_left4.png"), 100, 200)};
+	std::vector<Pic> plup = {Pic(LoadGraph("dat\\enemy_lup1.png"), 100, 200), Pic(LoadGraph("dat\\enemy_lup2.png"), 100, 200), Pic(LoadGraph("dat\\enemy_lup3.png"), 100, 200), Pic(LoadGraph("dat\\enemy_lup4.png"), 100, 200)};
+	std::vector<Animation> enemy = {Animation(pup, {3, 5, 4, 5}), Animation(prup, {3, 5, 4, 5}), Animation(pright, {3, 5, 4, 5}), Animation(prdown, {3, 5, 4, 5}), Animation(pdown, {3, 5, 4, 5}), Animation(pldown, {3, 5, 4, 5}), Animation(pleft, {3, 5, 4, 5}), Animation(plup, {3, 5, 4, 5})};
+
 	for(int i = 0; i < this->sizeY; i++) {
 		for(int j = 0; j < this->sizeX; j++) {
 			if(this->body[calcIndex(j, i)].type == ROAD && GetRand(200) == 0) {
-				this->enemys.emplace_back(j, i, player->speed, enemy, this->mapchips[ROAD].sizeX, Parameter(50, 0));
+				this->enemys.emplace_back(j, i, 7, enemy, this->mapchips[ROAD].sizeX, Parameter(50, 0));
 				this->movable[calcIndex(j, i)] = false;
 			}
 		}
@@ -47,10 +202,27 @@ nextMapFlag(false) {
 	// ミニマップを生成
 	for(int i = 0; i < (int)this->minibody.size(); i++) {
 		switch(this->body[i].type) {
+		case WALL_RIGHT:
+		case WALL_RDOWN:
+		case WALL_DOWN:
+		case WALL_LDOWN:
+		case WALL_LEFT:
 		case WALL:
+		case WALL_INRUP:
+		case WALL_INRDOWN:
+		case WALL_INLUP:
+		case WALL_INLDOWN:
+		case WALL_SINGLEDOWN:
+		case WALL_SINGLE:
+		case WALL_SINGLE_JOINTDOWN:
+		case WALL_SINGLE_JOINTRIGHT_UP:
+		case WALL_SINGLE_JOINTLEFT_UP:
+		case WALL_SINGLE_JOINTRIGHT_DOWN:
+		case WALL_SINGLE_JOINTLEFT_DOWN:
 			this->minibody[i].type = MINI_WALL;
 			break;
 		case ROAD:
+		case TypeNum:
 			this->minibody[i].type = MINI_ROAD;
 			break;
 		case STAIRS:
@@ -75,7 +247,7 @@ void Map::Print() {
 		for(int j = 0; j < this->sizeX; j++) {
 			// 壁なら#, 道なら を描画
 			if(j == this->player->panelX && i == this->player->panelY) printfDx("%s", "P");
-			else if(this->body[calcIndex(j, i)].type == WALL) printfDx("%s", "#");
+			else if(this->body[calcIndex(j, i)].type == WALL_DOWN) printfDx("%s", "#");
 			else if(this->body[calcIndex(j, i)].type == ROAD) printfDx("%s", " ");
 		}
 		printfDx("\n");
@@ -135,26 +307,34 @@ void Map::dieEnemy(int index) {
 	}
 }
 
-void Map::DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY) {
+void Map::DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY, std::vector<Panel> &map) {
 	int xsum, ysum;
-	int initxsum = this->mapchips.at(this->body[0].type).sizeX * (std::max)(0, panelSX);
-	int initysum = this->mapchips.at(this->body[0].type).sizeY * (std::max)(0, panelSY);
+	int initxsum = this->mapchips.at(map[0].type).sizeX * (std::max)(0, panelSX);
+	int initysum = this->mapchips.at(map[0].type).sizeY * (std::max)(0, panelSY);
 
 	xsum = initxsum;
 	ysum = initysum;
 
 	for(int i = (std::max)(0, panelSY); i <= (std::min)(panelEY, this->sizeY - 1); i++) {
 		for(int j = (std::max)(0, panelSX); j <= (std::min)(panelEX, this->sizeX - 1); j++) {
-			DrawGraph(screenSX + xsum, screenSY + ysum, this->mapchips.at(this->body[calcIndex(j, i)].type).handle, true);
-			xsum +=this->mapchips.at(this->body[calcIndex(j, i)].type).sizeX;
+			DrawGraph(screenSX + xsum, screenSY + ysum, this->mapchips.at(map[calcIndex(j, i)].type).handle, true);
+			xsum +=this->mapchips.at(map[calcIndex(j, i)].type).sizeX;
 		}
 		xsum = initxsum;
-		ysum +=this->mapchips.at(this->body[0].type).sizeY;
+		ysum +=this->mapchips.at(map[0].type).sizeY;
 	}
 }
 
 void Map::DrawPt(int screenSX, int screenSY) {
-	DrawPart(screenSX, screenSY, this->player->panelX - this->focusPanelX/2-1, this->player->panelY - this->focusPanelY/2-1, this->player->panelX + this->focusPanelX/2+1, this->player->panelY + this->focusPanelY/2+1);
+	DrawPart(screenSX, screenSY, this->player->panelX - this->focusPanelX/2-1, this->player->panelY - this->focusPanelY/2-1, this->player->panelX + this->focusPanelX/2+1, this->player->panelY + this->focusPanelY/2+1, this->body);
+}
+
+void Map::DrawPt2(int screenSX, int screenSY) {
+	DrawPart(screenSX, screenSY, this->player->panelX - this->focusPanelX/2-1, this->player->panelY - this->focusPanelY/2-1, this->player->panelX + this->focusPanelX/2+1, this->player->panelY + this->focusPanelY/2+1, this->body2);
+}
+
+void Map::DrawPt3(int screenSX, int screenSY) {
+	DrawPart(screenSX, screenSY, this->player->panelX - this->focusPanelX/2-1, this->player->panelY - this->focusPanelY/2-1, this->player->panelX + this->focusPanelX/2+1, this->player->panelY + this->focusPanelY/2+1, this->body3);
 }
 
 void Map::DrawMinimap(int screenSX, int screenSY) {
@@ -186,6 +366,10 @@ void Map::DrawFocus() {
 
 	// プレイヤー
 	this->player->Draw();
+
+	// body2
+	DrawPt2(this->cameraX, this->cameraY);
+	DrawPt3(this->cameraX, this->cameraY);
 }
 
 // 再起処理でマップを分割するやつ
@@ -260,7 +444,7 @@ void Map::genRooms() {
 
 // マップの分割を管理する関数
 void Map::genRndMap() {
-	for(int i = 0; i < (int)this->body.size(); i++) this->body[i].type = WALL;
+	for(int i = 0; i < (int)this->body.size(); i++) this->body[i].type = WALL_DOWN;
 	Rect *root = new Rect(0, 0, this->sizeX - 1, this->sizeY - 1);
 	this->rects.emplace_back(root);
 

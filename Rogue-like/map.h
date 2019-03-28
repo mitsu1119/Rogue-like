@@ -7,8 +7,12 @@
 
 // パネルの型情報のリスト
 // マップチップもこの順で作る
+// WALL_SINGLE_JOINTLEFT_DOWN	下側でWALL_LEFTとSINGLEがつながるやつ
 enum PanelType {
-	WALL, ROAD, STAIRS, MINI_WALL, MINI_ROAD, MINI_STAIRS, MINI_PLAYER, MINI_ENEMY, TypeNum
+	WALL_UP, WALL_RUP, WALL_RIGHT, WALL_RDOWN, WALL_DOWN, WALL_LDOWN, WALL_LEFT, WALL_LUP, WALL, WALL_INRUP, WALL_INRDOWN, WALL_INLDOWN, WALL_INLUP,
+	WALL_SINGLERUP, WALL_SINGLERIGHT, WALL_SINGLERDOWN, WALL_SINGLEDOWN, WALL_SINGLELDOWN, WALL_SINGLELEFT, WALL_SINGLELUP, WALL_SINGLE,
+	WALL_SINGLE_JOINTDOWN, WALL_SINGLE_JOINTRIGHT_UP, WALL_SINGLE_JOINTLEFT_UP, WALL_SINGLE_JOINTRIGHT_DOWN, WALL_SINGLE_JOINTLEFT_DOWN,
+	ROAD, STAIRS, MINI_WALL, MINI_ROAD, MINI_STAIRS, MINI_PLAYER, MINI_ENEMY, TypeNum
 };
 
 class Trap {
@@ -22,6 +26,10 @@ public:
 // パネル一枚一枚
 class Panel {
 public:
+	Panel() {
+	}
+	Panel(PanelType type):type(type) {
+	}
 	PanelType type;
 };
 
@@ -67,6 +75,8 @@ public:
 class Map {
 private:
 	std::vector<Panel> body;
+	std::vector<Panel> body2;	// レイヤが一つ上、プレイヤーやエネミーの上に配置される。当たり判定はなし
+	std::vector<Panel> body3;	// さらに上
 	std::vector<Panel> minibody;
 	std::vector<bool> movable;
 
@@ -87,7 +97,7 @@ private:
 	std::vector<Pic> mapchips;
 
 	// (screenSX, screenSY) から ([panelSX,panelEX],[panelSY,panelEY]) を計算して描画
-	void DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY);
+	void DrawPart(int screenSX, int screenSY, int panelSX, int panelSY, int panelEX, int panelEY, std::vector<Panel> &map);
 
 	// マップを描画するとき、マップをどのくらいずらすか指定する変数
 	int cameraX, cameraY;
@@ -95,6 +105,8 @@ private:
 
 	// (screenSX, screenSY) からマップを全部描画(つまりマップを(0, 0)から描画したものを平行移動したような感じ)
 	void DrawPt(int screenSX, int screenSY);
+	void DrawPt2(int screenSX, int screenSY);
+	void DrawPt3(int screenSX, int screenSY);
 
 	// プレイヤーとマップの確認のみ
 	void Print();

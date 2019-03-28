@@ -14,11 +14,11 @@ int Parameter::getAt() {
 	return this->at;
 }
 
-Player::Player(int speed, Pic pic, int panelSize, Parameter param):x(0), y(0), pic(pic), speed(speed), panelX(0), panelY(0), panelSize(panelSize), moveFlag(false), attackFlag(false), animationTime(0), param(param) {
+Player::Player(int speed, std::vector<Animation> pics, int panelSize, Parameter param):x(0), y(0), pics(pics), speed(speed), panelX(0), panelY(0), panelSize(panelSize), moveFlag(false), attackFlag(false), animationTime(0), param(param) {
 	this->front = (Direction)randAtoB(0, DirectionNum - 1);
 }
 
-Player::Player(int panelX, int panelY, int speed, Pic pic, int panelSize, Parameter param): x(0), y(0), pic(pic), speed(speed), panelX(panelX), panelY(panelY), panelSize(panelSize), moveFlag(false), attackFlag(false), animationTime(0), param(param) {}
+Player::Player(int panelX, int panelY, int speed, std::vector<Animation> pics, int panelSize, Parameter param): x(0), y(0), pics(pics), speed(speed), panelX(panelX), panelY(panelY), panelSize(panelSize), moveFlag(false), attackFlag(false), animationTime(0), param(param) {}
 
 bool Player::isMoving() {
 	return this->moveFlag;
@@ -37,10 +37,12 @@ void Player::move(Direction direction) {
 }
 
 bool Player::moveAnimation() {
+	this->pics[this->front].nextImg();
 	this->x += directionDx(this->front) * this->speed;
 	this->y += directionDy(this->front) * this->speed;
 	this->animationTime--;
 	if(animationTime == 0) {
+		this->pics[this->front].reset();
 		this->moveFlag = false;
 		return false;
 	}
@@ -48,12 +50,14 @@ bool Player::moveAnimation() {
 }
 
 bool Player::moveAnimation(int &dx, int &dy) {
+	this->pics[this->front].nextImg();
 	this->x += directionDx(this->front) * this->speed;
 	this->y += directionDy(this->front) * this->speed;
 	this->animationTime--;
 	dx = directionDx(this->front) * this->speed;
 	dy = directionDy(this->front) * this->speed;
 	if(animationTime == 0) {
+		this->pics[this->front].reset();
 		this->moveFlag = false;
 		return false;
 	}
@@ -64,8 +68,8 @@ bool Player::moveAnimation(int &dx, int &dy) {
 void Player::reviceCoord(bool harfX, bool harfY) {
 	this->x = this->panelX * this->panelSize;
 	this->y = this->panelY * this->panelSize;
-	if(harfX) this->x -= this->pic.sizeX / 2;
-	if(harfY) this->y -= this->pic.sizeY / 2;
+	if(harfX) this->x -= this->pics[this->front].pics[0].sizeX / 2;
+	if(harfY) this->y -= this->pics[this->front].pics[0].sizeY / 2;
 }
 
 Direction Player::attack() {
@@ -116,10 +120,10 @@ int Player::calcDamage(int defence) {
 }
 
 void Player::Draw() {
-	DrawGraph(this->x, this->y, this->pic.handle, true);
+	DrawGraph(this->x - (this->pics[this->front].pics[0].sizeX - 100), this->y - (this->pics[this->front].pics[0].sizeY - 100), this->pics[this->front].handle(), true);
 }
 
-Enemy::Enemy(int panelX, int panelY, int speed, Pic pic, int panelSize, Parameter param):Player(panelX, panelY, speed, pic, panelSize, param){
+Enemy::Enemy(int panelX, int panelY, int speed, std::vector<Animation> pics, int panelSize, Parameter param):Player(panelX, panelY, speed, pics, panelSize, param){
 	this->front = (Direction)randAtoB(0, DirectionNum - 1);
 }
 

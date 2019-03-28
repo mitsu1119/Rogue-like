@@ -1,6 +1,7 @@
 #pragma once;
 #include "useful.h"
 #include "DxLib.h"
+#include <vector>
 
 class Parameter {
 protected:
@@ -30,13 +31,14 @@ protected:
 	// プレイヤーのいる最低限のマップの情報
 	int panelSize;
 
-	Pic pic;
+	// Direction に対応
+	std::vector<Animation> pics;
 	
 	Parameter param;
 
 public:
-	Player(int speed, Pic pic, int panelSize, Parameter param);
-	Player(int panelX, int panelY, int speed, Pic pic, int panelSize, Parameter param);	// enemy用
+	Player(int speed, std::vector<Animation> pics, int panelSize, Parameter param);
+	Player(int panelX, int panelY, int speed, std::vector<Animation> pics, int panelSize, Parameter param);	// enemy用
 
 	// パネルの座標
 	int panelX, panelY;
@@ -71,7 +73,7 @@ public:
 
 class Enemy : public Player {
 public:
-	Enemy(int panelX, int panelY, int speed, Pic pic, int panelSize, Parameter param);
+	Enemy(int panelX, int panelY, int speed, std::vector<Animation> pics, int panelSize, Parameter param);
 
 	bool isDead();
 };
